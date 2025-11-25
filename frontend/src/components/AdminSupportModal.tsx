@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, MessageCircle, Send, Loader2 } from 'lucide-react';
-import { sendChatMessage, ChatbotResponse } from '../utils/chatbot-service';
+import { X, Database, Send, Loader2 } from 'lucide-react';
+import { sendRetailChatMessage, RetailChatbotResponse } from '../utils/retail-chatbot-service';
 
 interface Message {
   text: string;
@@ -8,15 +8,15 @@ interface Message {
   timestamp: string;
 }
 
-interface CustomerSupportModalProps {
+interface AdminSupportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalProps) {
+export function AdminSupportModal({ isOpen, onClose }: AdminSupportModalProps) {
   const [messages, setMessages] = useState<Message[]>([
     { 
-      text: "Hi! I'm Alankara AI Assistant. Ask me anything about our kiosk setup, troubleshooting, or features!", 
+      text: "Hi! I'm your Retail Analytics Assistant. Ask me questions about your sales, customer behavior, product performance, and more!", 
       isBot: true,
       timestamp: new Date().toISOString()
     }
@@ -27,12 +27,10 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Focus input when modal opens
   useEffect(() => {
     if (isOpen) {
       inputRef.current?.focus();
@@ -44,10 +42,8 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
     
     if (!trimmedMessage || isLoading) return;
 
-    // Clear error
     setError(null);
 
-    // Add user message immediately
     const userMessage: Message = {
       text: trimmedMessage,
       isBot: false,
@@ -59,12 +55,10 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
     setIsLoading(true);
 
     try {
-      // Call chatbot API
-      const response: ChatbotResponse = await sendChatMessage(trimmedMessage);
+      const response: RetailChatbotResponse = await sendRetailChatMessage(trimmedMessage);
       
-      // Add bot response
       const botMessage: Message = {
-        text: response.response,
+        text: response.answer,
         isBot: true,
         timestamp: response.timestamp
       };
@@ -73,9 +67,8 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get response');
       
-      // Add error message to chat
       const errorMessage: Message = {
-        text: "Sorry, I couldn't process that. Please try again or rephrase your question.",
+        text: "Sorry, I couldn't process that analytics query. Please try rephrasing your question.",
         isBot: true,
         timestamp: new Date().toISOString()
       };
@@ -94,10 +87,10 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
   };
 
   const suggestedQuestions = [
-    "How do I set up a new kiosk?",
-    "Camera not working?",
-    "How to add jewelry products?",
-    "Troubleshoot emotion detection"
+    "How many visitors did we have today?",
+    "Show me total try-ons this week",
+    "What are the trending products?",
+    "Show emotion analytics summary"
   ];
 
   const handleSuggestedQuestion = (question: string) => {
@@ -109,12 +102,11 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full h-[600px] flex flex-col overflow-hidden">
-        {/* Header */}
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full h-[600px] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-[#7C563D] to-[#9A6D4F]">
           <div className="flex items-center gap-3">
-            <MessageCircle className="w-6 h-6 text-white" />
-            <h2 className="text-xl font-semibold text-white">Alankara AI Support</h2>
+            <Database className="w-6 h-6 text-white" />
+            <h2 className="text-xl font-semibold text-white">Analytics Assistant</h2>
           </div>
           <button
             onClick={onClose}
@@ -125,31 +117,26 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
           </button>
         </div>
 
-        {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
           {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
-            >
+            <div key={index} className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}>
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                   message.isBot
                     ? 'bg-white text-gray-800 shadow-sm'
                     : 'bg-[#7C563D] text-white'
                 }`}
               >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
+                <p className="text-sm leading-relaxed">{message.text}</p>
               </div>
             </div>
           ))}
           
-          {/* Loading indicator */}
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-white text-gray-800 shadow-sm rounded-2xl px-4 py-3 flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-[#7C563D]" />
-                <p className="text-sm text-gray-600">Thinking...</p>
+                <p className="text-sm text-gray-600">Analyzing data...</p>
               </div>
             </div>
           )}
@@ -157,7 +144,6 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Suggested Questions (only show if chat is empty) */}
         {messages.length === 1 && !isLoading && (
           <div className="px-4 py-2 border-t border-gray-200 bg-white">
             <p className="text-xs text-gray-500 mb-2">Quick questions:</p>
@@ -175,7 +161,6 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
           </div>
         )}
 
-        {/* Input Area */}
         <div className="p-4 border-t border-gray-200 bg-white">
           {error && (
             <div className="mb-2 text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">
@@ -189,7 +174,7 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type your question here..."
+              placeholder="Ask about sales, visitors, emotions, products..."
               disabled={isLoading}
               rows={2}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#7C563D] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
@@ -209,7 +194,7 @@ export function CustomerSupportModal({ isOpen, onClose }: CustomerSupportModalPr
           </div>
           
           <p className="text-xs text-gray-500 mt-2 text-center">
-            Press Enter to send, Shift+Enter for new line
+            Press Enter to send
           </p>
         </div>
       </div>

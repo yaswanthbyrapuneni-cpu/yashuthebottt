@@ -3,7 +3,9 @@
 import imgFrame134 from "../assets/5f89ee062f2210170042d849c64718bf7f770345.png";
 import { TrendingProduct, useAdminDashboard } from "../hooks/useAdminDashboard";
 import svgPaths from "./svg-3nqkn1oc8r";
-
+import { SecuritySettings } from "../Components/SecuritySettings";
+import { AdminSupportModal } from "../Components/AdminSupportModal";
+import React, { useState } from "react";
 // [KEEP ALL YOUR EXISTING HEADER/LOGO COMPONENTS - Lines 1-200 approximately]
 // Logo, NotificationBox, LogOut01, SearchContainer, Header, Frame100, etc.
 
@@ -45,25 +47,53 @@ function LogOut01({ onClick }: { onClick?: () => void }) {
 }
 
 function SearchContainer({ onExit }: { onExit?: () => void }) {
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+
   const handleTechSupport = () => {
     window.open('https://cal.com/aismartlive-solutions-cx0zjs/technical-support', '_blank');
   };
 
   return (
-    <div className="content-stretch flex gap-4 sm:gap-6 md:gap-8 lg:gap-[48px] items-center relative shrink-0" data-name="Search Container">
-      <button
-        onClick={handleTechSupport}
-        className="relative shrink-0 size-10 sm:size-12 md:size-14 lg:size-[64px] hover:opacity-70 transition-opacity cursor-pointer bg-transparent border-none p-0"
-        aria-label="Technical Support"
-      >
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r="28" stroke="#202020" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-          <path d="M32 20v16M32 44h.02" stroke="#202020" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
-      <NotificationBox />
-      <LogOut01 onClick={onExit} />
-    </div>
+    <>
+      <div className="content-stretch flex gap-4 sm:gap-6 md:gap-8 lg:gap-[48px] items-center relative shrink-0" data-name="Search Container">
+        {/* Analytics Chatbot Button - NEW */}
+        <button
+          onClick={() => setIsSupportModalOpen(true)}
+          className="relative shrink-0 size-10 sm:size-12 md:size-14 lg:size-[64px] hover:opacity-70 transition-opacity cursor-pointer bg-transparent border-none p-0"
+          aria-label="Analytics Assistant"
+          title="Ask analytics questions"
+        >
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 64 64">
+            {/* Database/Analytics Icon */}
+            <ellipse cx="32" cy="18" rx="18" ry="8" stroke="#202020" strokeWidth="4" fill="none"/>
+            <path d="M14 18v20c0 4.4 8 8 18 8s18-3.6 18-8V18" stroke="#202020" strokeWidth="4" fill="none"/>
+            <path d="M14 28c0 4.4 8 8 18 8s18-3.6 18-8" stroke="#202020" strokeWidth="4" fill="none"/>
+          </svg>
+        </button>
+
+        {/* Tech Support Button - EXISTING */}
+        <button
+          onClick={handleTechSupport}
+          className="relative shrink-0 size-10 sm:size-12 md:size-14 lg:size-[64px] hover:opacity-70 transition-opacity cursor-pointer bg-transparent border-none p-0"
+          aria-label="Technical Support"
+          title="Book tech support call"
+        >
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="28" stroke="#202020" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+            <path d="M32 20v16M32 44h.02" stroke="#202020" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+
+        <NotificationBox />
+        <LogOut01 onClick={onExit} />
+      </div>
+
+      {/* Admin Analytics Support Modal */}
+      <AdminSupportModal
+        isOpen={isSupportModalOpen}
+        onClose={() => setIsSupportModalOpen(false)}
+      />
+    </>
   );
 }
 
@@ -625,7 +655,7 @@ function ProductItem({ product }: { product: TrendingProduct }) {
               <div className="content-stretch flex gap-1 md:gap-[12px] items-center relative shrink-0">
                 <p className="font-['Inter:Medium',_sans-serif] font-['Inter:Regular',_sans-serif] font-medium font-normal leading-[1.3] not-italic relative shrink-0 text-[#8b8b91] text-xs sm:text-sm md:text-base lg:text-[32px] text-nowrap whitespace-pre">
                   <span>{`| `}</span>
-                  <span className="text-[#222226]">😊 {product.positive_score}%</span>
+                  <span className="text-[#222226]">ðŸ˜Š {product.positive_score}%</span>
                 </p>
               </div>
             </div>
@@ -868,6 +898,7 @@ export default function AlankaraAiDashboard({ onExit }: { onExit?: () => void })
     <div className="bg-white content-stretch flex flex-col items-start relative w-full min-h-screen" data-name="Alankara Ai - Dashboard">
       <Header onExit={onExit} />
       <Frame100 />
+      <SecuritySettings />
       <Frame101 
         visitors={dashboardData.total_visitors} 
         tryOns={dashboardData.total_try_ons} 

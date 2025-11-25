@@ -1,5 +1,5 @@
 import { FaceLandmarkerResult, HandLandmarkerResult, NormalizedLandmark, PoseLandmarkerResult } from "@mediapipe/tasks-vision";
-import { Camera, X } from "lucide-react";
+import { Camera, X, MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DetectorType, loadDetector, runDetection } from "../detectors/DetectorManager";
 import { supabase } from "../integrations/supabase/client";
@@ -7,6 +7,7 @@ import { getJewelryPlacement, JewelryType } from "../utils/jewelry-positioner";
 import { calculateDominantEmotion, useEmotionDetection } from "../utils/useemotiondetection";
 import { trackTryOnEvent } from "../utils/visitor-tracking";
 import { EmotionValidationPopup } from "./EmotionValidationPopup";
+import { CustomerSupportModal } from "./CustomerSupportModal";
 
 // Function to check if an ear is visible based on landmark visibility and face angle
 function checkEarVisibility(landmarks: NormalizedLandmark[], side: 'left' | 'right'): boolean {
@@ -73,6 +74,9 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
     emotionPercentages: Record<string, number>;
     uniqueEmotionCount: number;
   } | null>(null);
+
+  // State for customer support modal
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
 
   // ✅ Handler for when session ends (user closes modal)
   const handleSessionEnd = async (samples: any[], productId: string, productName: string) => {
@@ -624,6 +628,15 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
             </button>
           </div>
 
+          {/* Customer Support Button */}
+          <button
+            onClick={() => setIsSupportModalOpen(true)}
+            className="absolute bottom-6 right-6 z-20 p-4 rounded-full bg-[#7c563d] hover:bg-[#6a4a33] shadow-2xl transition-all hover:scale-110"
+            aria-label="Customer Support"
+          >
+            <MessageCircle className="w-6 h-6 text-white" />
+          </button>
+
           {/* Debug Overlay */}
           {hasCamera && !isLoading && (
             <div className="absolute bottom-4 left-4 z-20 bg-black/70 text-white text-xs p-3 rounded-lg font-mono">
@@ -673,6 +686,12 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
           onConfirm={handleValidationConfirm}
         />
       )}
+
+      {/* Customer Support Modal */}
+      <CustomerSupportModal
+        isOpen={isSupportModalOpen}
+        onClose={() => setIsSupportModalOpen(false)}
+      />
     </>
   );
 }

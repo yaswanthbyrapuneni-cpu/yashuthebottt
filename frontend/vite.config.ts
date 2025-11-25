@@ -92,7 +92,7 @@ export default defineConfig(async ({ mode }) => {
     },
     build: {
       target: 'esnext',
-      outDir: 'build',
+      outDir: 'dist',
       sourcemap: true,
       rollupOptions: {
         output: {
