@@ -12,7 +12,7 @@ import { SearchModal } from "./components/SearchModal";
 import { VirtualTryOn } from "./components/VirtualTryOn";
 import { CustomerSupportModal } from "./components/CustomerSupportModal";
 import { SecurityBlackScreen } from "./components/SecurityBlackScreen";
-import SecurityMonitor from "/Components/SecurityMonitor";
+import SecurityMonitor from "./Components/SecurityMonitor";
 import AlankaraAiDashboard from "./imports/AdminAiDashboard";
 import { ProductPage } from "./imports/ProductPage";
 import headerSvgPaths from "./imports/svg-2iy52myn9q";
@@ -237,8 +237,8 @@ export default function App() {
   const products = {
     trending: [
       //  { id: 1, name: "Elegant Gold Ring", image: imgVector, images: [imgVector, "https://images.unsplash.com/photo-1670831635481-63aa22ee8439?w=1080", imgVector], rating: 4.5, reviewCount: 156, type: "RINGS", price: "â‚¹45,999", originalPrice: "â‚¹52,999", description: "Exquisite 22K gold ring...", material: "22K Gold", purity: "BIS Hallmarked", weight: "8.5 grams", dimensions: "2.0 x 1.8 cm", category: "Trending" },
-       { id: 2, name: "Royal Gold Necklace", image: imgVector1, images: [imgVector1, "https://images.unsplash.com/photo-1611012756377-05e2e4269fa3?w=1080", imgVector1], rating: 4.8, reviewCount: 289, type: "NECKLACE", price: "â‚¹1,25,999", originalPrice: "â‚¹1,45,999", description: "Stunning gold necklace...", material: "22K Gold", purity: "BIS Hallmarked", weight: "45.2 grams", dimensions: "42 cm length", category: "Trending" },
-       { id: 3, name: "Designer Gold Earrings", image: imgVector2, images: [imgVector2, "https://images.unsplash.com/photo-1651328905475-16882e198d54?w=1080", imgVector2], rating: 4.6, reviewCount: 203, type: "EARRINGS", price: "â‚¹32,999", originalPrice: "â‚¹38,999", description: "Beautiful handcrafted gold earrings...", material: "22K Gold", purity: "BIS Hallmarked", weight: "12.5 grams", dimensions: "3.5 x 2.0 cm", category: "Trending" },
+       { id: 2, name: "Royal Gold Necklace", image: imgVector1, images: [imgVector1, "https://images.unsplash.com/photo-1611012756377-05e2e4269fa3?w=1080", imgVector1], rating: 4.8, reviewCount: 289, type: "NECKLACE", price: "₹ 1,25,999", originalPrice: "₹ 1,45,999", description: "Stunning gold necklace...", material: "22K Gold", purity: "BIS Hallmarked", weight: "45.2 grams", dimensions: "42 cm length", category: "Trending" },
+       { id: 3, name: "Designer Gold Earrings", image: imgVector2, images: [imgVector2, "https://images.unsplash.com/photo-1651328905475-16882e198d54?w=1080", imgVector2], rating: 4.6, reviewCount: 203, type: "EARRINGS", price: "₹ 32,999", originalPrice: "₹ 38,999", description: "Beautiful handcrafted gold earrings...", material: "22K Gold", purity: "BIS Hallmarked", weight: "12.5 grams", dimensions: "3.5 x 2.0 cm", category: "Trending" },
     ],
     gold: [
       // Added new test products
@@ -250,7 +250,7 @@ export default function App() {
         rating: 4.8, 
         reviewCount: 165, 
         type: "PENDANT", 
-        price: "â‚¹42,999", 
+        price: "₹ 42,999", 
         description: "Exquisite floral design pendant in 22K gold", 
         material: "22K Gold", 
         weight: "4.5 grams", 
@@ -269,7 +269,7 @@ export default function App() {
         rating: 4.7, 
         reviewCount: 142, 
         type: "BRACELET", 
-        price: "â‚¹85,999", 
+        price: "₹ 85,999", 
         description: "Elegant bangles with diamond accents", 
         material: "22K Gold with Diamonds", 
         weight: "12.5 grams", 
@@ -345,7 +345,7 @@ export default function App() {
         rating: 4.9, 
         reviewCount: 245, 
         type: "NECKLACE", 
-        price: "â‚¹1,35,999", 
+        price: "₹ 1,35,999", 
         description: "Ornate traditional gold necklace with stunning central pendant featuring intricate goldwork and gemstone accents", 
         material: "22K Gold with Ruby & Emerald", 
         purity: "BIS Hallmarked",
@@ -362,7 +362,7 @@ export default function App() {
         rating: 4.7, 
         reviewCount: 198, 
         type: "NECKLACE", 
-        price: "â‚¹68,999", 
+        price: "₹ 68,999", 
         description: "Elegant necklace with golden floral motifs and pearl drop embellishments", 
         material: "22K Gold with Pearls & Ruby", 
         purity: "BIS Hallmarked",
@@ -379,7 +379,7 @@ export default function App() {
         rating: 4.8, 
         reviewCount: 312, 
         type: "NECKLACE", 
-        price: "â‚¹1,85,999", 
+        price: "₹ 1,85,999", 
         description: "Elaborate traditional necklace with coin designs, gemstone accents, and teardrop pendant", 
         material: "22K Gold with Ruby & Emerald", 
         purity: "BIS Hallmarked",
@@ -395,7 +395,7 @@ export default function App() {
         rating: 5.0, 
         reviewCount: 178, 
         type: "NECKLACE", 
-        price: "â‚¹3,25,999", 
+        price: "₹ 3,25,999", 
         description: "Exquisite bridal necklace with elaborate leaf patterns, ruby embellishments, and pearl drops", 
         material: "22K Gold with Ruby & Pearl", 
         purity: "BIS Hallmarked",
@@ -412,7 +412,7 @@ export default function App() {
         rating: 4.9, 
         reviewCount: 287, 
         type: "HARAMS", 
-        price: "â‚¹2,45,999", 
+        price: "₹ 2,45,999", 
         description: "Magnificent temple-design haram with Lakshmi pendant, layered beadwork in ruby and pearl", 
         material: "22K Gold with Ruby & Pearl", 
         purity: "BIS Hallmarked",
@@ -420,16 +420,16 @@ export default function App() {
         dimensions: "52 cm length",
         category: "Gold" 
       },
-      { id: 4, name: "Classic Gold Ring", image: imgRing, images: [imgRing, "https://images.unsplash.com/photo-1670831635481-63aa22ee8439?w=1080"], rating: 4.3, reviewCount: 128, type: "RINGS", price: "â‚¹38,999", description: "Timeless gold ring...", material: "22K Gold", weight: "6.8 grams", category: "Gold" },
-      { id: 5, name: "Traditional Gold Necklace", image: imgVector1, images: [imgVector1, "https://images.unsplash.com/photo-1611012756377-05e2e4269fa3?w=1080"], rating: 4.7, reviewCount: 245, type: "CHAINS", price: "â‚¹98,999", description: "Heritage-inspired necklace...", material: "22K Gold", weight: "38.5 grams", category: "Gold" },
-      { id: 6, name: "Elegant Gold Earrings", image: imgVector2, images: [imgVector2, "https://images.unsplash.com/photo-1651328905475-16882e198d54?w=1080"], rating: 4.5, reviewCount: 187, type: "EARRINGS", price: "â‚¹28,999", description: "Sophisticated earrings...", material: "22K Gold", weight: "10.2 grams", category: "Gold" },
-      { id: 10, name: "Simple Gold Chain", image: imgCatChains, images: [imgCatChains], rating: 4.2, reviewCount: 95, type: "CHAINS", price: "â‚¹18,500", description: "Classic gold chain...", material: "22K Gold", weight: "5 grams", category: "Gold" },
+      { id: 4, name: "Classic Gold Ring", image: imgRing, images: [imgRing, "https://images.unsplash.com/photo-1670831635481-63aa22ee8439?w=1080"], rating: 4.3, reviewCount: 128, type: "RINGS", price: "₹ 38,999", description: "Timeless gold ring...", material: "22K Gold", weight: "6.8 grams", category: "Gold" },
+      { id: 5, name: "Traditional Gold Necklace", image: imgVector1, images: [imgVector1, "https://images.unsplash.com/photo-1611012756377-05e2e4269fa3?w=1080"], rating: 4.7, reviewCount: 245, type: "CHAINS", price: "₹ 98,999", description: "Heritage-inspired necklace...", material: "22K Gold", weight: "38.5 grams", category: "Gold" },
+      { id: 6, name: "Elegant Gold Earrings", image: imgVector2, images: [imgVector2, "https://images.unsplash.com/photo-1651328905475-16882e198d54?w=1080"], rating: 4.5, reviewCount: 187, type: "EARRINGS", price: "₹ 28,999", description: "Sophisticated earrings...", material: "22K Gold", weight: "10.2 grams", category: "Gold" },
+      { id: 10, name: "Simple Gold Chain", image: imgCatChains, images: [imgCatChains], rating: 4.2, reviewCount: 95, type: "CHAINS", price: "₹ 18,500", description: "Classic gold chain...", material: "22K Gold", weight: "5 grams", category: "Gold" },
       // { id: 11, name: "Ornate Gold Mangalsutra", image: imgCatMangalsutra, images: [imgCatMangalsutra], rating: 4.9, reviewCount: 310, type: "MANGALSUTRA", price: "â‚¹65,000", description: "Traditional mangalsutra...", material: "22K Gold", weight: "15 grams", category: "Gold" },
-      { id: 12, name: "Floral Gold Pendant", image: imgCatPendants, images: [imgCatPendants], rating: 4.6, reviewCount: 150, type: "PENDANTS", price: "â‚¹22,000", description: "Delicate floral pendant...", material: "22K Gold", weight: "4 grams", category: "Gold" },
+      { id: 12, name: "Floral Gold Pendant", image: imgCatPendants, images: [imgCatPendants], rating: 4.6, reviewCount: 150, type: "PENDANTS", price: "₹ 22,000", description: "Delicate floral pendant...", material: "22K Gold", weight: "4 grams", category: "Gold" },
       { id: 15, name: "Traditional Waist Belt", image: imgLuxuryBackgroundGoldGradientDesign2, images: [imgLuxuryBackgroundGoldGradientDesign2], rating: 4.7, reviewCount: 95, type: "HIPBELT", price: "â‚¹78,999", description: "Elegant gold waist belt with intricate design...", material: "22K Gold", weight: "85 grams", category: "Gold" },
-      { id: 16, name: "Classic Mathapatti", image: imgManpathi, images: [imgManpathi], rating: 4.9, reviewCount: 78, type: "MATHAPATTI", price: "â‚¹65,999", description: "Traditional forehead ornament with intricate chain work and center pendant...", material: "22K Gold", weight: "32 grams", category: "Gold" },
+      { id: 16, name: "Classic Mathapatti", image: imgManpathi, images: [imgManpathi], rating: 4.9, reviewCount: 78, type: "MATHAPATTI", price: "₹ 65,999", description: "Traditional forehead ornament with intricate chain work and center pendant...", material: "22K Gold", weight: "32 grams", category: "Gold" },
       // { id: 17, name: "Modern Forehead Chain", image: imgManpathi, images: [imgManpathi], rating: 4.8, reviewCount: 45, type: "MATHAPATTI", price: "â‚¹45,999", description: "Contemporary mathapatti design with delicate chain pattern...", material: "22K Gold", weight: "25 grams", category: "Gold" },
-      { id: 18, name: "Traditional Gold Haram", image: imgHaram, images: [imgHaram], rating: 4.9, reviewCount: 112, type: "HARAMS", price: "â‚¹245,999", description: "Exquisite traditional haram with intricate temple design...", material: "22K Gold", weight: "125 grams", category: "Gold" }
+      { id: 18, name: "Traditional Gold Haram", image: imgHaram, images: [imgHaram], rating: 4.9, reviewCount: 112, type: "HARAMS", price: "₹ 245,999", description: "Exquisite traditional haram with intricate temple design...", material: "22K Gold", weight: "125 grams", category: "Gold" }
     ],
     diamond: [ // Added Diamond products
       // { id: 7, name: "Solitaire Diamond Ring", image: imgVector4, images: [imgVector4], rating: 4.9, reviewCount: 98, type: "RINGS", price: "â‚¹75,999", description: "Luxurious diamond ring...", material: "18K Gold, Diamond", weight: "4.5 grams", category: "Diamond" },

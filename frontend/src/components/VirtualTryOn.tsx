@@ -6,8 +6,7 @@ import { supabase } from "../integrations/supabase/client";
 import { getJewelryPlacement, JewelryType } from "../utils/jewelry-positioner";
 import { calculateDominantEmotion, useEmotionDetection } from "../utils/useemotiondetection";
 import { trackTryOnEvent } from "../utils/visitor-tracking";
-import { EmotionValidationPopup } from "./EmotionValidationPopup";
-import { CustomerSupportModal } from "./CustomerSupportModal";
+import { EmotionValidationPopup } from "./emotionvalidationpopup";
 
 // Function to check if an ear is visible based on landmark visibility and face angle
 function checkEarVisibility(landmarks: NormalizedLandmark[], side: 'left' | 'right'): boolean {

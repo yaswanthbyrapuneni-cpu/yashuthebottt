@@ -655,7 +655,7 @@ function ProductItem({ product }: { product: TrendingProduct }) {
               <div className="content-stretch flex gap-1 md:gap-[12px] items-center relative shrink-0">
                 <p className="font-['Inter:Medium',_sans-serif] font-['Inter:Regular',_sans-serif] font-medium font-normal leading-[1.3] not-italic relative shrink-0 text-[#8b8b91] text-xs sm:text-sm md:text-base lg:text-[32px] text-nowrap whitespace-pre">
                   <span>{`| `}</span>
-                  <span className="text-[#222226]">ðŸ˜Š {product.positive_score}%</span>
+                  <span className="text-[#222226]">😊 {product.positive_score}%</span>
                 </p>
               </div>
             </div>
