@@ -7,6 +7,7 @@ import { getJewelryPlacement, JewelryType } from "../utils/jewelry-positioner";
 import { calculateDominantEmotion, useEmotionDetection } from "../utils/useemotiondetection";
 import { trackTryOnEvent } from "../utils/visitor-tracking";
 import { EmotionValidationPopup } from "./emotionvalidationpopup";
+import { CustomerSupportModal } from "./CustomerSupportModal";
 
 // Function to check if an ear is visible based on landmark visibility and face angle
 function checkEarVisibility(landmarks: NormalizedLandmark[], side: 'left' | 'right'): boolean {

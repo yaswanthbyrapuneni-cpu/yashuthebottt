@@ -1,5 +1,7 @@
 // src/App.tsx
-import { ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Lottie from "lottie-react";
+import aiChatBotAnimation from "./assets/ai chat bot.json";
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import { Toaster } from "sonner@2.0.3";
@@ -123,7 +125,7 @@ export default function App() {
   const [securityModeActive, setSecurityModeActive] = useState(false);
   const [isManualOverride, setIsManualOverride] = useState(false);
   const kioskId = import.meta.env.VITE_KIOSK_ID || 'KIOSK_001';
-
+  const [isSecurityMonitoring, setIsSecurityMonitoring] = useState(false);
   // Track visitor on mount
   useEffect(() => {
     trackVisitor();
@@ -627,28 +629,33 @@ export default function App() {
                   </div>
                   {/* Header Actions */}
                   <div className="content-stretch flex gap-[24px] items-center relative shrink-0 p-[0px] m-[0px]">
-                    {/* Support Icon */}
+                    {/* Support Icon - Lottie Animation */}
                     <button
-                      className="relative shrink-0 size-10 sm:size-12 md:size-14 lg:size-[64px] hover:opacity-80 transition-opacity"
+                      className="relative shrink-0 size-10 sm:size-12 md:size-14 lg:size-[64px] transition-opacity"
                       onClick={() => setShowSupportModal(true)}
-                      style={{ background: 'transparent', border: 'none', padding: 0 }}
+                      style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
                       aria-label="Customer Support"
                     >
-                      <HelpCircle className="w-full h-full text-[#7C563D]" strokeWidth={1.5} />
+                      <Lottie 
+                        animationData={aiChatBotAnimation}
+                        loop={true}
+                        autoplay={true}
+                        style={{ width: '100%', height: '100%' }}
+                      />
                     </button>
+                    
                     {/* Search Button */}
-                    <div className="content-stretch flex gap-[48px] items-center relative shrink-0">
-                      <button
-                        className="relative shrink-0 size-10 sm:size-12 md:size-14 lg:size-[64px] hover:opacity-80 transition-opacity"
-                        onClick={() => setShowSearchModal(true)}
-                        style={{ background: 'transparent', border: 'none', padding: 0 }}
-                        aria-label="Search"
-                      >
-                        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 64 64">
-                          <path d={headerSvgPaths.p1b92c370} stroke="#7C563D" strokeLinecap="round" strokeLinejoin="round" strokeWidth="5" />
-                        </svg>
-                      </button>
-                    </div>
+                    <button
+                      className="relative shrink-0 size-10 sm:size-12 md:size-14 lg:size-[64px] hover:opacity-80 transition-opacity"
+                      onClick={() => setShowSearchModal(true)}
+                      style={{ background: 'transparent', border: 'none', padding: 0 }}
+                      aria-label="Search"
+                    >
+                      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 64 64">
+                        <path d={headerSvgPaths.p1b92c370} stroke="#7C563D" strokeLinecap="round" strokeLinejoin="round" strokeWidth="5" />
+                      </svg>
+                    </button>
+                    
                     {/* Exit Button */}
                     <button
                       className="relative shrink-0 size-10 sm:size-12 md:size-14 lg:size-[64px] hover:opacity-80 transition-opacity"
