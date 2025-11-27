@@ -1,65 +1,40 @@
-import { useState, useEffect, useRef } from 'react';
-import { loadDetector, runDetection } from '../detectors/DetectorManager';
-import { FaceLandmarkerResult } from '@mediapipe/tasks-vision';
-import clsx from 'clsx';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { loadDetector, runDetection } from "../detectors/DetectorManager";
+import { FaceLandmarkerResult } from "@mediapipe/tasks-vision";
+import clsx from "clsx";
 
 interface IdleAdProps {
-  /**
-   * Path to the ad video inside public folder.
-   * Default: /ads/AD.mp4
-   */
-  videoSrc?: string;
-
-  /**
-   * Time in milliseconds before showing ad when no person is detected
-   * @default 30000 (30 seconds)
-   */
-  inactivityTimeout?: number;
-
-  /**
-   * CSS transition duration for overlay fade in/out
-   * @default "500ms"
-   */
-  transitionDuration?: string;
+  inactivityTimeout?: number; // 30 sec default
 }
 
-// Video file should be at: public/ads/AD.mp4
-const DEFAULT_AD_VIDEO_SRC = '/ads/AD.mp4';
-
 export function IdleAd({
-  videoSrc = DEFAULT_AD_VIDEO_SRC,
   inactivityTimeout = 30000,
-  transitionDuration = '500ms',
 }: IdleAdProps) {
   const [isAdVisible, setIsAdVisible] = useState(false);
-  const [isDetectorReady, setIsDetectorReady] = useState(false);
-  const [cameraError, setCameraError] = useState<string>('');
-  const [isMuted, setIsMuted] = useState(true); // 🔊 audio state (start muted so autoplay works)
-
-  // Hidden camera stream video (for detection)
-  const cameraVideoRef = useRef<HTMLVideoElement>(null);
-  // Fullscreen ad video
-  const adVideoRef = useRef<HTMLVideoElement>(null);
-
+  const [cameraError, setCameraError] = useState("");
+  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const detectionRef = useRef<number>(0);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const mountedRef = useRef(true);
 
-  // Initialize face detection + camera
+  // YouTube video id
+  const VIDEO_ID = "QKk9LspUkjQ"; // keep the video id here
+  const PLAYER_DIV_ID = "idle-ad-yt-player";
+
+  // Player ref (will be YT.Player instance once ready)
+  const playerRef = useRef<any>(null);
+  const ytApiReadyRef = useRef<boolean>(false);
+
   useEffect(() => {
-    console.log('[IdleAd] Initializing face detector...');
-    loadDetector('face')
-      .then(() => {
+    // Load face detector
+    loadDetector("face")
+      .then(() => mountedRef.current && initCamera())
+      .catch((err) => {
         if (!mountedRef.current) return;
-        console.log('[IdleAd] Detector loaded successfully');
-        setIsDetectorReady(true);
-        initCamera();
-      })
-      .catch((error: any) => {
-        if (!mountedRef.current) return;
-        console.error('[IdleAd] Failed to initialize face detector:', error);
-        setCameraError(`Failed to load face detection: ${error.message ?? String(error)}`);
+        console.error("Detector failed:", err);
+        setCameraError(err.message);
       });
 
     return () => {
@@ -69,279 +44,280 @@ export function IdleAd({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Play / pause ad video based on visibility
-  useEffect(() => {
-    const adVideo = adVideoRef.current;
-    if (!adVideo) return;
-
-    if (isAdVisible) {
-      console.log('[IdleAd] Showing idle ad video overlay');
-      // Hide cursor
-      document.body.style.cursor = 'none';
-
-      const playPromise = adVideo.play();
-      if (playPromise && typeof playPromise.then === 'function') {
-        playPromise.catch((err) => {
-          console.warn('[IdleAd] Autoplay blocked or failed:', err);
-        });
-      }
-    } else {
-      console.log('[IdleAd] Hiding idle ad video overlay');
-      document.body.style.cursor = '';
-      adVideo.pause();
-      adVideo.currentTime = 0;
-      // When hiding ad, go back to muted for next cycle
-      setIsMuted(true);
-    }
-
-    return () => {
-      document.body.style.cursor = '';
-    };
-  }, [isAdVisible]);
-
-  // Initialize camera
+  // --- Camera init ---
   const initCamera = async () => {
     try {
-      console.log('[IdleAd] Requesting camera access for detection...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1280 },
           height: { ideal: 720 },
-          facingMode: 'user',
-          frameRate: { ideal: 30 },
+          facingMode: "user",
         },
       });
 
       if (!mountedRef.current) {
-        stream.getTracks().forEach((track) => track.stop());
+        stream.getTracks().forEach((t) => t.stop());
         return;
       }
 
       streamRef.current = stream;
 
-      if (cameraVideoRef.current) {
-        cameraVideoRef.current.srcObject = stream;
-        await cameraVideoRef.current.play();
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
 
-        console.log(
-          '[IdleAd] Stream Resolution:',
-          cameraVideoRef.current.videoWidth,
-          'x',
-          cameraVideoRef.current.videoHeight
-        );
-
-        if (cameraVideoRef.current.readyState >= 2) {
-          startDetection();
-        } else {
-          cameraVideoRef.current.onloadeddata = () => startDetection();
-        }
+        if (videoRef.current.readyState >= 2) startDetection();
+        else videoRef.current.onloadeddata = () => startDetection();
       }
-    } catch (err) {
-      if (!mountedRef.current) return;
-      console.error('[IdleAd] Camera initialization failed:', err);
-      setCameraError(err instanceof Error ? err.message : 'Failed to access camera');
+    } catch (err: any) {
+      if (mountedRef.current) {
+        setCameraError(err.message || "Camera access failed");
+      }
     }
   };
 
-  // Start person detection loop
+  // --- Detection loop ---
   const startDetection = () => {
-    if (!cameraVideoRef.current) return;
-
-    console.log('[IdleAd] Starting face detection loop...');
-
-    const detectPerson = async () => {
-      if (!cameraVideoRef.current || !mountedRef.current) return;
+    const detect = async () => {
+      if (!videoRef.current || !mountedRef.current) return;
 
       try {
-        const results = runDetection(
-          'face',
-          cameraVideoRef.current
-        ) as FaceLandmarkerResult | undefined;
+        const result = runDetection("face", videoRef.current) as FaceLandmarkerResult;
 
-        const facesDetected = !!results?.faceLandmarks?.length;
-
-        if (facesDetected) {
-          // Person detected — hide ad and reset timer
-          if (isAdVisible) {
-            console.log('[IdleAd] Face detected — hiding ad overlay');
-          }
+        if (result?.faceLandmarks?.length > 0) {
+          // PERSON FOUND → STOP ADS
           setIsAdVisible(false);
-          document.body.style.cursor = '';
+          document.body.style.cursor = "default";
 
           if (inactivityTimerRef.current) {
             clearTimeout(inactivityTimerRef.current);
             inactivityTimerRef.current = null;
           }
         } else {
-          // No person detected — start inactivity timer if not active
+          // PERSON NOT FOUND → START INACTIVITY TIMER
           if (!inactivityTimerRef.current && !isAdVisible) {
-            console.log(
-              `[IdleAd] No face detected — starting inactivity timer (${inactivityTimeout} ms)`
-            );
             inactivityTimerRef.current = setTimeout(() => {
               if (mountedRef.current) {
-                console.log('[IdleAd] Inactivity timeout reached — showing ad overlay');
                 setIsAdVisible(true);
+                document.body.style.cursor = "none";
               }
             }, inactivityTimeout);
           }
         }
-      } catch (error) {
-        console.error('[IdleAd] Error in detection loop:', error);
+      } catch (e) {
+        console.error("Detection error:", e);
       }
 
-      if (mountedRef.current) {
-        detectionRef.current = requestAnimationFrame(detectPerson);
-      }
+      detectionRef.current = requestAnimationFrame(detect);
     };
 
-    detectPerson();
+    detect();
   };
 
-  // Cleanup resources
   const cleanup = () => {
-    console.log('[IdleAd] Cleaning up resources...');
-    if (detectionRef.current) {
-      cancelAnimationFrame(detectionRef.current);
-    }
-
-    if (inactivityTimerRef.current) {
-      clearTimeout(inactivityTimerRef.current);
-      inactivityTimerRef.current = null;
-    }
+    if (detectionRef.current) cancelAnimationFrame(detectionRef.current);
+    if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
 
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
+      streamRef.current.getTracks().forEach((t) => t.stop());
     }
 
-    if (cameraVideoRef.current) {
-      cameraVideoRef.current.srcObject = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+
+    // destroy YT player if exists
+    try {
+      if (playerRef.current && typeof playerRef.current.destroy === "function") {
+        playerRef.current.destroy();
+      }
+    } catch (e) {
+      // ignore
     }
 
-    document.body.style.cursor = '';
+    document.body.style.cursor = "default";
   };
 
-  // User click to enable sound
-  const handleUnmuteClick = () => {
-    const video = adVideoRef.current;
-    if (!video) return;
+  // -----------------------------
+  // YouTube IFrame API handling
+  // -----------------------------
+  // Load YT API script if not loaded
+  useEffect(() => {
+    if ((window as any).YT && (window as any).YT.Player) {
+      ytApiReadyRef.current = true;
+      createPlayer();
+      return;
+    }
 
-    setIsMuted(false);
-    // call play() again in case browser paused it when we toggled audio
-    const playPromise = video.play();
-    if (playPromise && typeof playPromise.then === 'function') {
-      playPromise.catch((err) => {
-        console.warn('[IdleAd] Play after unmute failed:', err);
-      });
+    // If script already added but api not ready, attach onYouTubeIframeAPIReady handler
+    if (!(window as any).onYouTubeIframeAPIReady) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(tag);
+    }
+
+    // attach the global callback
+    (window as any).onYouTubeIframeAPIReady = () => {
+      ytApiReadyRef.current = true;
+      createPlayer();
+    };
+
+    // cleanup: remove global callback when unmount
+    return () => {
+      try {
+        delete (window as any).onYouTubeIframeAPIReady;
+      } catch (_) {}
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Create player (div with id PLAYER_DIV_ID must exist in DOM)
+  const createPlayer = useCallback(() => {
+    if (!ytApiReadyRef.current) return;
+    if (playerRef.current) return; // already created
+
+    const YT = (window as any).YT;
+    if (!YT || !YT.Player) return;
+
+    playerRef.current = new YT.Player(PLAYER_DIV_ID, {
+      height: "720",
+      width: "1280",
+      videoId: VIDEO_ID,
+      playerVars: {
+        autoplay: 1,
+        controls: 0,
+        mute: 1, // start muted
+        loop: 1,
+        playlist: VIDEO_ID,
+        modestbranding: 1,
+        playsinline: 1,
+        rel: 0,
+        // enablejsapi not needed here — using YT.Player
+      },
+      events: {
+        onReady: (event: any) => {
+          // ensure it's muted and playing
+          try {
+            event.target.mute();
+            event.target.playVideo();
+          } catch (e) {
+            // ignore
+          }
+        },
+        onError: (err: any) => {
+          console.error("YT Player error:", err);
+        },
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Enable audio after user tap
+  const handleEnableAudio = () => {
+    setIsAudioEnabled(true);
+    // Unmute and play
+    if (playerRef.current && typeof playerRef.current.unMute === "function") {
+      try {
+        playerRef.current.unMute();
+        playerRef.current.playVideo();
+      } catch (e) {
+        console.error("Failed to unmute/play via player API:", e);
+        // fallback: replace iframe src with embed that has &mute=0 (not ideal cross-origin)
+        // But with YT.Player this should normally work.
+      }
+    } else {
+      // If player not ready, try to create it (it should be ready though)
+      createPlayer();
+      setTimeout(() => {
+        if (playerRef.current && typeof playerRef.current.unMute === "function") {
+          try {
+            playerRef.current.unMute();
+            playerRef.current.playVideo();
+          } catch (e) {
+            console.error("Fallback unmute/play failed:", e);
+          }
+        }
+      }, 500);
     }
   };
 
-  // If camera fails, still show the ad video fullscreen as fallback
+  // If ad is hidden, keep audio off in background
+  useEffect(() => {
+    if (!isAdVisible) {
+      setIsAudioEnabled(false);
+      if (playerRef.current && typeof playerRef.current.mute === "function") {
+        try {
+          playerRef.current.mute();
+        } catch (e) {}
+      }
+    } else {
+      // when ad becomes visible, ensure player created
+      createPlayer();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdVisible]);
+
   if (cameraError) {
     return (
-      <div className="fixed inset-0 bg-black/90 flex flex-col items-center justify-center z-[9999]">
-        <div className="text-center max-w-md mx-auto p-6">
-          <h3 className="text-white text-xl font-semibold mb-2">Camera Access Error</h3>
-          <p className="text-white/80 mb-4">{cameraError}</p>
-        </div>
-        <div className="relative w-full h-full">
-          <video
-            ref={adVideoRef}
-            className="w-full h-full object-contain bg-black"
-            autoPlay
-            loop
-            playsInline
-            muted={isMuted}
-            defaultMuted
-            onError={(e) => {
-              const el = e.currentTarget;
-              console.error(
-                '[IdleAd] Ad video error (fallback mode). readyState:',
-                el.readyState,
-                'networkState:',
-                el.networkState
-              );
-            }}
-          >
-            <source src={videoSrc} type="video/mp4" />
-          </video>
-
-          {/* Unmute button in fallback mode */}
-          {isMuted && (
-            <button
-              type="button"
-              onClick={handleUnmuteClick}
-              className="absolute bottom-6 right-6 bg-white/80 text-black px-4 py-2 rounded-full shadow-lg text-sm font-semibold hover:bg-white"
-            >
-              Tap to enable sound 🔊
-            </button>
-          )}
-        </div>
+      <div className="fixed inset-0 bg-black/80 text-white flex items-center justify-center z-[99999]">
+        <p>{cameraError}</p>
       </div>
     );
   }
 
   return (
     <>
-      {/* Hidden video element for detection */}
-      <video ref={cameraVideoRef} className="hidden" playsInline muted />
+      {/* hidden camera stream */}
+      <video ref={videoRef} className="hidden" playsInline muted />
 
-      {/* Advertisement Overlay */}
+      {/* AD OVERLAY */}
       <div
         className={clsx(
-          'fixed inset-0 bg-black z-[9999]',
-          'transition-all ease-in-out',
-          isAdVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none invisible'
+          "fixed inset-0 z-[9999] bg-black transition-all duration-500 flex items-center justify-center",
+          isAdVisible
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         )}
-        style={{
-          transitionDuration,
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100vw',
-          height: '100vh',
-          overflow: 'hidden',
-        }}
       >
-        <video
-          ref={adVideoRef}
-          className="absolute inset-0 w-full h-full object-contain bg-black"
-          loop
-          playsInline
-          muted={isMuted}   // 🔊 controlled mute
-          defaultMuted      // important for first autoplay
-          onError={(e) => {
-            const el = e.currentTarget;
-            console.error(
-              '[IdleAd] Ad video error. readyState:',
-              el.readyState,
-              'networkState:',
-              el.networkState
-            );
-          }}
-        >
-          <source src={videoSrc} type="video/mp4" />
-        </video>
+        {/* The YT player will be injected into this div by the IFrame API */}
+        <div
+          id={PLAYER_DIV_ID}
+          className="absolute inset-0 w-full h-full"
+          style={{ zIndex: 0 }}
+        />
 
-        {/* Unmute button */}
-        {isMuted && isAdVisible && (
+        {/* Tap-to-audio button (shows only when audio not enabled) */}
+        {isAdVisible && !isAudioEnabled && (
           <button
-            type="button"
-            onClick={handleUnmuteClick}
-            className="absolute bottom-6 right-6 bg-white/80 text-black px-4 py-2 rounded-full shadow-lg text-sm font-semibold hover:bg-white"
+            onClick={handleEnableAudio}
+            className="z-[99999] absolute bottom-8 left-1/2 transform -translate-x-1/2 px-5 py-3 rounded-2xl bg-white/90 text-black font-semibold shadow-lg"
+            aria-label="Enable audio"
           >
-            Tap to enable sound 🔊
+            Tap to enable audio
           </button>
         )}
 
-        {/* Debug info */}
-        <div className="absolute top-4 right-4 bg-black/50 text-white text-sm p-2 rounded">
-          Idle Ad Video • Detector: {isDetectorReady ? 'Ready' : 'Loading'} • Sound:{' '}
-          {isMuted ? 'Muted' : 'On'}
-        </div>
+        {/* Optional: small mute/unmute toggle after audio enabled */}
+        {isAdVisible && isAudioEnabled && (
+          <button
+            onClick={() => {
+              if (!playerRef.current) return;
+              try {
+                const isMuted =
+                  typeof playerRef.current.isMuted === "function" && playerRef.current.isMuted();
+                if (isMuted) {
+                  playerRef.current.unMute();
+                } else {
+                  playerRef.current.mute();
+                }
+              } catch (e) {
+                console.error("toggle mute failed:", e);
+              }
+            }}
+            className="z-[99999] absolute bottom-8 right-8 px-3 py-2 rounded-lg bg-white/90 text-black font-medium shadow-md"
+            aria-label="Toggle mute"
+          >
+            Toggle sound
+          </button>
+        )}
       </div>
     </>
   );
