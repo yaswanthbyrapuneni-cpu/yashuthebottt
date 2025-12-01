@@ -17,8 +17,8 @@ export class MotionDetector {
   private previousFrame: ImageData | null = null;
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private motionThreshold: number = 20; // Sensitivity (lower = more sensitive)
-  private minChangePercentage: number = 2; // Minimum 2% of pixels must change
+  private motionThreshold: number = 35; // Increased sensitivity threshold to reduce false triggers
+  private minChangePercentage: number = 5; // Require 5% pixel change (more significant movement)
 
   constructor(width: number = 640, height: number = 480) {
     this.canvas = document.createElement('canvas');
@@ -142,33 +142,11 @@ export class FaceDetector {
    * Simple face detection using canvas (fallback method)
    */
   public detectFacesSimple(videoElement: HTMLVideoElement): boolean {
-    try {
-      // This is a simplified detection that checks for significant changes in the center area
-      // where faces typically appear
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d')!;
-      
-      canvas.width = 320;
-      canvas.height = 240;
-      
-      ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-      const imageData = ctx.getImageData(
-        canvas.width * 0.25, 
-        canvas.height * 0.2, 
-        canvas.width * 0.5, 
-        canvas.height * 0.6
-      );
-
-      // Analyze brightness and contrast in center region (where faces usually are)
-      const avgBrightness = this.calculateAverageBrightness(imageData);
-      
-      // If brightness is reasonable (not too dark/bright), likely a face
-      return avgBrightness > 40 && avgBrightness < 200;
-
-    } catch (error) {
-      console.error('[Face Detector] Simple detection error:', error);
-      return false;
-    }
+    // DISABLED: Simple brightness-based detection is too unreliable
+    // It triggers on walls, laptops, desks - anything with "normal" brightness
+    // Only use MediaPipe FaceMesh for accurate face detection
+    console.log('[Face Detector] Simple detection disabled - use MediaPipe only');
+    return false;
   }
 
   /**
@@ -224,6 +202,8 @@ export class SecurityDetector {
   private faceDetector: FaceDetector;
   private lastMotionTime: number = 0;
   private lastFaceTime: number = 0;
+  private motionStabilityCounter: number = 0;
+  private readonly MOTION_STABILITY_THRESHOLD = 2; // Require 3 consecutive motion detections
 
   constructor() {
     this.motionDetector = new MotionDetector(640, 480);
@@ -237,13 +217,25 @@ export class SecurityDetector {
     videoElement: HTMLVideoElement,
     faceMesh?: any
   ): Promise<DetectionResult> {
-    const motionDetected = this.motionDetector.detectMotion(videoElement);
+    const rawMotionDetected = this.motionDetector.detectMotion(videoElement);
+    
+    // Stability counter: require multiple consecutive motion detections
+    if (rawMotionDetected) {
+      this.motionStabilityCounter++;
+    } else {
+      this.motionStabilityCounter = 0;
+    }
+    
+    // Only report motion if we've detected it N times in a row
+    const motionDetected = this.motionStabilityCounter >= this.MOTION_STABILITY_THRESHOLD;
     
     let faceDetected = false;
     if (faceMesh) {
+      // Use MediaPipe for accurate face detection
       faceDetected = await this.faceDetector.detectFaces(videoElement, faceMesh);
     } else {
-      faceDetected = this.faceDetector.detectFacesSimple(videoElement);
+      // Simple detection is disabled (too many false positives)
+      faceDetected = false;
     }
 
     const now = Date.now();
@@ -259,7 +251,7 @@ export class SecurityDetector {
     return {
       motionDetected,
       faceDetected,
-      motionLevel: motionDetected ? 50 : 0, // Simplified
+      motionLevel: motionDetected ? 50 : 0,
       faceCount: this.faceDetector.getFaceCount()
     };
   }
@@ -271,6 +263,7 @@ export class SecurityDetector {
     this.motionDetector.reset();
     this.lastMotionTime = 0;
     this.lastFaceTime = 0;
+    this.motionStabilityCounter = 0;
   }
 
   /**

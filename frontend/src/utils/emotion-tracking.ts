@@ -21,7 +21,7 @@ export async function analyzeEmotion(videoElement: HTMLVideoElement) {
     
     console.log('[Emotion] Sending to API...');
     // Send to Flask API
-    const response = await fetch('http://192.168.29.6:5000/detect-emotion', {
+    const response = await fetch('/api/detect-emotion', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: base64Image })

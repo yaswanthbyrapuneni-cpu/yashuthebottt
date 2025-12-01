@@ -12,6 +12,9 @@ serve(async (req) => {
   }
 
   const VERIFY_TOKEN = Deno.env.get('WHATSAPP_WEBHOOK_VERIFY_TOKEN');
+  const WHATSAPP_ACCESS_TOKEN = Deno.env.get('WHATSAPP_ACCESS_TOKEN');
+  const WHATSAPP_PHONE_NUMBER_ID = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID');
+  const RECIPIENT_NUMBER = Deno.env.get('WHATSAPP_RECIPIENT_NUMBER');
 
   // GET request - Webhook verification from Meta
   if (req.method === 'GET') {
@@ -20,9 +23,12 @@ serve(async (req) => {
     const token = url.searchParams.get('hub.verify_token');
     const challenge = url.searchParams.get('hub.challenge');
 
-    console.log('Webhook verification request:', { mode, token: token ? 'present' : 'missing', challenge: challenge ? 'present' : 'missing' });
+    console.log('Webhook verification request:', { 
+      mode, 
+      token: token ? 'present' : 'missing', 
+      challenge: challenge ? 'present' : 'missing' 
+    });
 
-    // Check if mode and token match
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
       console.log('Webhook verified successfully');
       return new Response(challenge, {
@@ -35,13 +41,103 @@ serve(async (req) => {
     }
   }
 
-  // POST request - Webhook event from Meta
+  // POST request - Can be either:
+  // 1. Webhook event FROM Meta (incoming messages/status updates)
+  // 2. Booking notification request FROM frontend
   if (req.method === 'POST') {
     try {
       const body = await req.json();
-      console.log('Webhook event received:', JSON.stringify(body, null, 2));
+      
+      // Check if this is a booking request from frontend
+      if (body.customer) {
+        console.log('=== Booking Request Received ===');
+        console.log('Customer:', body.customer);
+        console.log('Product:', body.product);
 
-      // Process the webhook event
+        // Validate WhatsApp credentials
+        if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID || !RECIPIENT_NUMBER) {
+          console.error('Missing WhatsApp credentials');
+          return new Response(
+            JSON.stringify({ 
+              error: 'WhatsApp API credentials not configured',
+              success: false 
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+          );
+        }
+
+        // Format booking notification message
+        const { customer, product } = body;
+        
+        const productLines = product && typeof product === 'object' ? (
+          `💍 *Product:* ${product.name ?? 'N/A'}\n` +
+          `💰 *Price:* ${product.price ?? 'N/A'}\n` +
+          `🔗 *Product ID:* ${product.id ?? 'N/A'}`
+        ) : (
+          `🛍️ *Request Type:* General Video Shopping (no specific product)`
+        );
+
+        const message = `*📹 NEW VIDEO SHOPPING BOOKING*\n\n` +
+                       `👤 *Customer:* ${customer?.name ?? 'N/A'}\n` +
+                       `📧 *Email:* ${customer?.email ?? 'N/A'}\n` +
+                       `📞 *Phone:* ${customer?.phone ?? 'N/A'}\n` +
+                       `🕒 *Preferred Time:* ${customer?.preferred_time ?? 'N/A'}\n` +
+                       `🌐 *Language:* ${customer?.language ?? 'N/A'}\n\n` +
+                       productLines;
+
+        console.log('Sending booking notification to:', RECIPIENT_NUMBER);
+
+        // Send WhatsApp message via Cloud API
+        const whatsappResponse = await fetch(
+          `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messaging_product: 'whatsapp',
+              recipient_type: 'individual',
+              to: RECIPIENT_NUMBER,
+              type: 'text',
+              text: { 
+                preview_url: false,
+                body: message 
+              }
+            })
+          }
+        );
+
+        const whatsappData = await whatsappResponse.json();
+        console.log('WhatsApp API Response:', whatsappData);
+
+        if (!whatsappResponse.ok) {
+          console.error('WhatsApp API error:', whatsappData);
+          return new Response(
+            JSON.stringify({ 
+              error: 'Failed to send WhatsApp message',
+              details: whatsappData,
+              success: false 
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+          );
+        }
+
+        console.log('=== Booking notification sent successfully ===');
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message_id: whatsappData.messages?.[0]?.id,
+            message: 'Video shopping request sent successfully'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        );
+      }
+
+      // Otherwise, this is a webhook event FROM Meta
+      console.log('Webhook event received from Meta:', JSON.stringify(body, null, 2));
+
       if (body.object === 'whatsapp_business_account') {
         const entries = body.entry || [];
         
@@ -81,19 +177,21 @@ serve(async (req) => {
         }
       }
 
-      // Always return 200 OK to acknowledge receipt
+      // Always return 200 OK to acknowledge receipt from Meta
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
 
     } catch (error) {
-      console.error('Error processing webhook:', error);
-      // Still return 200 to prevent Meta from retrying
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      console.error('Error processing request:', error);
+      return new Response(
+        JSON.stringify({ 
+          error: error.message,
+          success: false 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
     }
   }
 

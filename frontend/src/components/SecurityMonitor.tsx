@@ -12,7 +12,6 @@ import {
   isSecurityModeActive,
   captureImageFromVideo,
   storeSecurityEvent,
-  uploadSecurityImage,
   updateSirenState,
   subscribeSirenStateChanges,
   updateLastDetectionTime
@@ -50,9 +49,10 @@ export default function SecurityMonitor({
     isDetected: false,
     alertSent: false
   });
-  const lastMotionCallTimeRef = useRef<number>(0);
-  const lastFaceCallTimeRef = useRef<number>(0);
-  const CALL_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes cooldown between calls
+
+  // Warm-up tracking to prevent false triggers during camera initialization
+  const warmUpStartTimeRef = useRef<number | null>(null);
+  const WARM_UP_DURATION = 10000; // 10 seconds
 
   const kioskId = import.meta.env.VITE_KIOSK_ID || 'KIOSK_001';
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
@@ -75,7 +75,7 @@ export default function SecurityMonitor({
     
     // Load siren audio
     audioRef.current = new Audio('/siren.mp3');
-    audioRef.current.loop = false;
+    audioRef.current.loop = true;
 
     return () => {
       mountedRef.current = false;
@@ -192,9 +192,27 @@ export default function SecurityMonitor({
     // Initialize camera first
     await initCamera();
 
+    // Set warm-up start time
+    warmUpStartTimeRef.current = Date.now();
+    console.log(`[Security Monitor] ⏱️ Warming up for ${WARM_UP_DURATION / 1000} seconds...`);
+
     monitoringIntervalRef.current = window.setInterval(async () => {
       if (!videoRef.current || !detectorRef.current || !mountedRef.current) {
         return;
+      }
+
+      // Check if still in warm-up period
+      if (warmUpStartTimeRef.current) {
+        const elapsed = Date.now() - warmUpStartTimeRef.current;
+        if (elapsed < WARM_UP_DURATION) {
+          const remaining = Math.ceil((WARM_UP_DURATION - elapsed) / 1000);
+          if (remaining % 2 === 0) { // Log every 2 seconds
+            console.log(`[Security Monitor] ⏱️ Warming up... ${remaining}s remaining`);
+          }
+          return; // Skip detection during warm-up
+        } else if (elapsed >= WARM_UP_DURATION && elapsed < WARM_UP_DURATION + 1000) {
+          console.log('[Security Monitor] ✅ Warm-up complete! Monitoring active.');
+        }
       }
 
       try {
@@ -246,6 +264,9 @@ export default function SecurityMonitor({
       monitoringIntervalRef.current = null;
     }
 
+    // Reset warm-up timer
+    warmUpStartTimeRef.current = null;
+
     motionStateRef.current = { isDetected: false, alertSent: false };
     faceStateRef.current = { isDetected: false, alertSent: false };
     setLastMotionDetected(false);
@@ -280,11 +301,10 @@ export default function SecurityMonitor({
 
   const sendAlertToBackend = async (
     detectionType: 'motion' | 'face',
-    imageBase64: string,
-    makeCall: boolean // New parameter to control call behavior
+    imageBase64: string
   ): Promise<{ success: boolean; email_sent: boolean; call_made: boolean }> => {
     try {
-      console.log(`[Security Monitor] Sending ${detectionType} alert to backend (makeCall: ${makeCall})...`);
+      console.log(`[Security Monitor] Sending ${detectionType} alert to backend...`);
 
       const response = await fetch(`${BACKEND_URL}/send-alert`, {
         method: 'POST',
@@ -295,8 +315,7 @@ export default function SecurityMonitor({
           type: detectionType,
           image: imageBase64,
           timestamp: new Date().toISOString(),
-          kiosk_id: kioskId,
-          make_call: makeCall // Tell backend whether to make a call
+          kiosk_id: kioskId
         })
       });
 
@@ -327,40 +346,20 @@ export default function SecurityMonitor({
     console.log('[Security Monitor] Handling motion detection...');
 
     try {
-      // Check if we should make a call based on cooldown period
-      const now = Date.now();
-      const timeSinceLastCall = now - lastMotionCallTimeRef.current;
-      const shouldMakeCall = timeSinceLastCall >= CALL_COOLDOWN_MS;
-      
-      if (!shouldMakeCall) {
-        console.log(`[Security Monitor] Motion call skipped - cooldown active (${Math.round(timeSinceLastCall / 1000)}s since last call, need ${CALL_COOLDOWN_MS / 1000}s)`);
-      }
-
       let imageBase64 = '';
-      let imageUrl: string | undefined = undefined;
-      
       if (videoRef.current) {
         const imageBlob = await captureImageFromVideo(videoRef.current);
-        
         if (imageBlob) {
           imageBase64 = await blobToBase64(imageBlob);
-          imageUrl = await uploadSecurityImage(imageBlob, kioskId, 'motion') || undefined;
         }
       }
 
-      // Send alert to backend - email will always be sent, call only if cooldown expired
-      const alertResult = await sendAlertToBackend('motion', imageBase64, shouldMakeCall);
-
-      // If a call was successfully made, update the last call time
-      if (alertResult.call_made) {
-        lastMotionCallTimeRef.current = now;
-        console.log('[Security Monitor] Motion call made - cooldown started');
-      }
+      const alertResult = await sendAlertToBackend('motion', imageBase64);
 
       await storeSecurityEvent({
         kiosk_id: kioskId,
         detection_type: 'motion',
-        image_url: imageUrl,
+        image_url: undefined,
         email_sent: alertResult.email_sent,
         call_made: alertResult.call_made
       });
@@ -374,44 +373,25 @@ export default function SecurityMonitor({
       console.error('[Security Monitor] Failed to handle motion detection:', error);
     }
   };
+
   const handleFaceDetection = async () => {
     console.log('[Security Monitor] Handling face detection...');
 
     try {
-      // Check if we should make a call based on cooldown period
-      const now = Date.now();
-      const timeSinceLastCall = now - lastFaceCallTimeRef.current;
-      const shouldMakeCall = timeSinceLastCall >= CALL_COOLDOWN_MS;
-      
-      if (!shouldMakeCall) {
-        console.log(`[Security Monitor] Face call skipped - cooldown active (${Math.round(timeSinceLastCall / 1000)}s since last call, need ${CALL_COOLDOWN_MS / 1000}s)`);
-      }
-
       let imageBase64 = '';
-      let imageUrl: string | undefined = undefined;
-      
       if (videoRef.current) {
         const imageBlob = await captureImageFromVideo(videoRef.current);
-        
         if (imageBlob) {
           imageBase64 = await blobToBase64(imageBlob);
-          imageUrl = await uploadSecurityImage(imageBlob, kioskId, 'face') || undefined;
         }
       }
 
-      // Send alert to backend - email will always be sent, call only if cooldown expired
-      const alertResult = await sendAlertToBackend('face', imageBase64, shouldMakeCall);
-
-      // If a call was successfully made, update the last call time
-      if (alertResult.call_made) {
-        lastFaceCallTimeRef.current = now;
-        console.log('[Security Monitor] Face call made - cooldown started');
-      }
+      const alertResult = await sendAlertToBackend('face', imageBase64);
 
       await storeSecurityEvent({
         kiosk_id: kioskId,
         detection_type: 'face',
-        image_url: imageUrl,
+        image_url: undefined,
         email_sent: alertResult.email_sent,
         call_made: alertResult.call_made
       });
@@ -425,6 +405,7 @@ export default function SecurityMonitor({
       console.error('[Security Monitor] Failed to handle face detection:', error);
     }
   };
+
   const playSiren = () => {
     if (audioRef.current) {
       audioRef.current.play().catch(err => {
@@ -445,7 +426,51 @@ export default function SecurityMonitor({
     await updateSirenState(kioskId, false);
   };
 
-  // This component runs completely hidden - all UI is shown by SecurityBlackScreen
-  // The monitoring and detection happens in the background
-  return null;
+  return (
+    <>
+      {/* Security Mode Indicator */}
+      {securityModeEnabled && (
+        <div className="fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+            <span className="font-semibold">Security Mode Active</span>
+          </div>
+          {lastMotionDetected && (
+            <div className="text-sm mt-1">âš ï¸ Motion Detected</div>
+          )}
+          {lastFaceDetected && (
+            <div className="text-sm mt-1">ðŸš¨ Face Detected</div>
+          )}
+        </div>
+      )}
+
+      {/* Camera Error Display */}
+      {cameraError && securityModeEnabled && (
+        <div className="fixed top-20 right-4 bg-yellow-600 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          <div className="text-sm">âš ï¸ Camera Error: {cameraError}</div>
+        </div>
+      )}
+
+      {/* Siren Alert Modal */}
+      {sirenActive && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-2xl text-center max-w-md">
+            <div className="text-6xl mb-4 animate-pulse">ðŸš¨</div>
+            <h2 className="text-2xl font-bold text-red-600 mb-4">
+              Security Alert!
+            </h2>
+            <p className="text-gray-700 mb-6">
+              Intruder detected. Siren is active.
+            </p>
+            <button
+              onClick={handleStopSiren}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold text-xl px-12 py-4 rounded-lg transition-colors"
+            >
+              STOP SIREN
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }

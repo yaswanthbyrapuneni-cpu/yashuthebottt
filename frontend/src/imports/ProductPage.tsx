@@ -827,7 +827,7 @@ export function ProductPage({
     return true; // Form is valid
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormForm>) => {
     event.preventDefault();
     if (!validateForm()) return;
 
@@ -848,10 +848,18 @@ export function ProductPage({
         } : null
       };
 
-      const { data, error } = await supabase.functions.invoke('send-video-shopping-details', { body: submissionData });
+      console.log('[Video Shopping] Sending request:', submissionData);
 
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke('whatsapp-webhook', { 
+        body: submissionData 
+      });
 
+      if (error) {
+        console.error('[Video Shopping] Error:', error);
+        throw error;
+      }
+
+      console.log('[Video Shopping] Success:', data);
       setShowSuccessDialog(true);
       setFormData({ name: '', mobile: '', email: '', language: 'English', time: { hour: '', minute: '', period: 'AM' } });
     } catch (error) {
