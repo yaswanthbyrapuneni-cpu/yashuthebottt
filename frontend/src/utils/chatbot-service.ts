@@ -1,6 +1,6 @@
 // Chatbot API Service for Alankara AI Customer Support
 
-const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || 'http://34.180.18.130:8000';
+const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || 'https://chatbot.alankaraai.com';
 const CHATBOT_TIMEOUT = parseInt(import.meta.env.VITE_CHATBOT_TIMEOUT || '30000');
 
 // Types based on API documentation
