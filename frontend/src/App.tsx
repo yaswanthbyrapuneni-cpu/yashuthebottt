@@ -14,7 +14,7 @@ import { SearchModal } from "./components/SearchModal";
 import { VirtualTryOn } from "./components/VirtualTryOn";
 import { CustomerSupportModal } from "./components/CustomerSupportModal";
 import { SecurityBlackScreen } from "./components/SecurityBlackScreen";
-import SecurityMonitor from "./Components/SecurityMonitor";
+import SecurityMonitor from "./components/SecurityMonitor";
 import AlankaraAiDashboard from "./imports/AdminAiDashboard";
 import { ProductPage } from "./imports/ProductPage";
 import headerSvgPaths from "./imports/svg-2iy52myn9q";
