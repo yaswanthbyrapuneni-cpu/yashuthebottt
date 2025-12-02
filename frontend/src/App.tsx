@@ -47,6 +47,12 @@ import imgNecklace6 from "./assets/6.png";
 import imgHaram from "./assets/haram.png";
 import imgManpathi from "./assets/manpathi.png";
 import imgRing from "./assets/ring.png";
+// Import images at the top of your file
+import banner1 from './assets/banner.png';
+import banner2 from './assets/banner2.png';
+import banner3 from './assets/banner3.png';
+import banner4 from './assets/banner4.png';
+
 
 export default function App() {
   const [activeCategory, setActiveCategory] = useState("Gold");
@@ -228,10 +234,10 @@ export default function App() {
   const categories = ["Gold", "Diamond", "Silver", "Book Now"];
   // Using promotional images for carousel
   const carouselImages = [
-    "/src/assets/banner.png",
-    "/src/assets/baneer2.png",
-    "/src/assets/banner3.png",
-    "/src/assets/banner4.png"
+    banner1,
+    banner2,
+    banner3,
+    banner4
   ];
 
   // --- MOCK PRODUCTS (Added 'type' matching sub-category labels & 'category') ---
