@@ -3,8 +3,8 @@
 import imgFrame134 from "../assets/5f89ee062f2210170042d849c64718bf7f770345.png";
 import { TrendingProduct, useAdminDashboard } from "../hooks/useAdminDashboard";
 import svgPaths from "./svg-3nqkn1oc8r";
-import { SecuritySettings } from "../Components/SecuritySettings";
-import { AdminSupportModal } from "../Components/AdminSupportModal";
+import { SecuritySettings } from "../components/SecuritySettings";
+import { AdminSupportModal } from "../components/AdminSupportModal";
 import React, { useState } from "react";
 // [KEEP ALL YOUR EXISTING HEADER/LOGO COMPONENTS - Lines 1-200 approximately]
 // Logo, NotificationBox, LogOut01, SearchContainer, Header, Frame100, etc.
