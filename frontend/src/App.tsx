@@ -14,13 +14,14 @@ import { SearchModal } from "./components/SearchModal";
 import { VirtualTryOn } from "./components/VirtualTryOn";
 import { CustomerSupportModal } from "./components/CustomerSupportModal";
 import { SecurityBlackScreen } from "./components/SecurityBlackScreen";
-import SecurityMonitor from "./components/SecurityMonitor";
+import SecurityMonitor from "./Components/SecurityMonitor";
 import AlankaraAiDashboard from "./imports/AdminAiDashboard";
 import { ProductPage } from "./imports/ProductPage";
 import headerSvgPaths from "./imports/svg-2iy52myn9q";
 import { getDetectorForJewelry } from "./utils/detector-mapper";
 import { trackVisitor } from "./utils/visitor-tracking";
 import { supabase } from "./client";
+import Login from "./components/login";
 
 // Assuming these image imports resolve correctly via your bundler (Vite alias)
 import imgCatMangalsutra from "figma:asset/19f75d718df8ede7167628d5393f1d27667f8713.png";
@@ -53,8 +54,10 @@ import banner2 from './assets/banner2.png';
 import banner3 from './assets/banner3.png';
 import banner4 from './assets/banner4.png';
 
-
 export default function App() {
+  // Authentication state - ADD THIS LINE
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
   const [activeCategory, setActiveCategory] = useState("Gold");
   // CHANGE: Added state to track the selected sub-category (e.g., "RINGS", "NECKLACE")
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
@@ -594,6 +597,9 @@ export default function App() {
       <Routes>
         {/* Route for main kiosk interface */}
         <Route path="/" element={
+          !isAuthenticated ? (
+            <Login onLoginSuccess={() => setIsAuthenticated(true)} />
+          ) : (
           <>
             <Toaster richColors position="top-center" />
             <CustomerSupportModal 
@@ -987,6 +993,7 @@ export default function App() {
               }}
             />
           </>
+           )
         } />
         
         {/* Route for admin dashboard */}
