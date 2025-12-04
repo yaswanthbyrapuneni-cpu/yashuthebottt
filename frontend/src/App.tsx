@@ -14,13 +14,14 @@ import { SearchModal } from "./components/SearchModal";
 import { VirtualTryOn } from "./components/VirtualTryOn";
 import { CustomerSupportModal } from "./components/CustomerSupportModal";
 import { SecurityBlackScreen } from "./components/SecurityBlackScreen";
-import SecurityMonitor from "./Components/SecurityMonitor";
+import SecurityMonitor from "./components/SecurityMonitor";
 import AlankaraAiDashboard from "./imports/AdminAiDashboard";
 import { ProductPage } from "./imports/ProductPage";
 import headerSvgPaths from "./imports/svg-2iy52myn9q";
 import { getDetectorForJewelry } from "./utils/detector-mapper";
 import { trackVisitor } from "./utils/visitor-tracking";
 import { supabase } from "./client";
+import Login from "./components/login";
 
 // Assuming these image imports resolve correctly via your bundler (Vite alias)
 import imgCatMangalsutra from "figma:asset/19f75d718df8ede7167628d5393f1d27667f8713.png";
@@ -47,8 +48,26 @@ import imgNecklace6 from "./assets/6.png";
 import imgHaram from "./assets/haram.png";
 import imgManpathi from "./assets/manpathi.png";
 import imgRing from "./assets/ring.png";
+// Import images at the top of your file
+import banner1 from './assets/banner.png';
+import banner2 from './assets/banner2.png';
+import banner3 from './assets/banner3.png';
+import banner4 from './assets/banner4.png';
+import imgNecklace205 from "./assets/necklace_peacock.png";
+import imgNecklace206 from "./assets/necklace_beaded.png";
+import imgNecklace207 from "./assets/choker_temple.png";
+import imgNecklace208 from "./assets/collar_broad.png";
+import imgHaram302 from "./assets/haram_deity_coin.png";
+import imgNecklace210 from "./assets/necklace_mango.png";
+import imgNecklace211 from "./assets/necklace_lakshmi_coin.png";
+import imgNecklace212 from "./assets/necklace_floral_deity.png";
+import imgNecklace213 from "./assets/necklace_maharani.png";
+import imgNecklace214 from "./assets/necklace_lakshmi_pendant.png";
 
 export default function App() {
+  // Authentication state - ADD THIS LINE
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
   const [activeCategory, setActiveCategory] = useState("Gold");
   // CHANGE: Added state to track the selected sub-category (e.g., "RINGS", "NECKLACE")
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
@@ -228,10 +247,10 @@ export default function App() {
   const categories = ["Gold", "Diamond", "Silver", "Book Now"];
   // Using promotional images for carousel
   const carouselImages = [
-    "/src/assets/banner.png",
-    "/src/assets/baneer2.png",
-    "/src/assets/banner3.png",
-    "/src/assets/banner4.png"
+    banner1,
+    banner2,
+    banner3,
+    banner4
   ];
 
   // --- MOCK PRODUCTS (Added 'type' matching sub-category labels & 'category') ---
@@ -389,7 +408,7 @@ export default function App() {
         dimensions: "48 cm length",
         category: "Gold" 
       },
-            { 
+      { 
         id: 204, 
         name: "Grand Bridal Necklace", 
         image: imgNecklace14, 
@@ -405,7 +424,150 @@ export default function App() {
         dimensions: "55 cm length",
         category: "Gold" 
       },
-     
+      { 
+        id: 205, 
+        name: "Royal Peacock Heritage Necklace", 
+        image: imgNecklace205, 
+        images: [imgNecklace205], 
+        rating: 4.9, 
+        reviewCount: 287, 
+        type: "NECKLACE", 
+        price: "₹ 2,15,999", 
+        description: "Majestic gold necklace featuring intricate peacock motifs, elaborate filigree work, and leaf-shaped danglers throughout", 
+        material: "22K Gold with Ruby accents", 
+        purity: "BIS Hallmarked",
+        weight: "95.5 grams", 
+        dimensions: "45 cm length",
+        category: "Gold" 
+      },
+      { 
+        id: 206, 
+        name: "Layered Gold Bead Necklace", 
+        image: imgNecklace206, 
+        images: [imgNecklace206], 
+        rating: 4.8, 
+        reviewCount: 265, 
+        type: "NECKLACE", 
+        price: "₹ 2,85,999", 
+        description: "Exquisite multi-layered necklace with gold beadwork strands, decorative balls, and ornate peacock pendant", 
+        material: "22K Gold", 
+        purity: "BIS Hallmarked",
+        weight: "125.8 grams", 
+        dimensions: "48 cm length",
+        category: "Gold" 
+      },            
+      { 
+        id: 207, 
+        name: "Divine Temple Choker", 
+        image: imgNecklace207, 
+        images: [imgNecklace207], 
+        rating: 5.0, 
+        reviewCount: 298, 
+        type: "NECKLACE", 
+        price: "₹ 3,45,999", 
+        description: "Wide temple-style choker featuring deity motifs, green emerald and ruby gemstones, with dangling gold ball ornaments", 
+        material: "22K Gold with Emerald & Ruby", 
+        purity: "BIS Hallmarked",
+        weight: "145.2 grams", 
+        dimensions: "40 cm length",
+        category: "Gold" 
+      },     
+      { 
+        id: 208, 
+        name: "Imperial Collar Necklace", 
+        image: imgNecklace208, 
+        images: [imgNecklace208], 
+        rating: 4.9, 
+        reviewCount: 312, 
+        type: "NECKLACE", 
+        price: "₹ 3,75,999", 
+        description: "Broad multi-tiered collar featuring floral and circular patterns with hanging coin pendants", 
+        material: "22K Gold", 
+        purity: "BIS Hallmarked",
+        weight: "165.5 grams", 
+        dimensions: "42 cm length",
+        category: "Gold" 
+      },   
+      { 
+        id: 210, 
+        name: "Traditional Mango Design Necklace", 
+        image: imgNecklace210, 
+        images: [imgNecklace210], 
+        rating: 4.7, 
+        reviewCount: 245, 
+        type: "NECKLACE", 
+        price: "₹ 1,95,999", 
+        description: "Elegant necklace with classic mango-shaped (paisley) motifs and teardrop pendant with gold ball danglers", 
+        material: "22K Gold", 
+        purity: "BIS Hallmarked",
+        weight: "85.5 grams", 
+        dimensions: "45 cm length",
+        category: "Gold" 
+      },     
+      { 
+        id: 211, 
+        name: "Divine Lakshmi Coin Necklace", 
+        image: imgNecklace211, 
+        images: [imgNecklace211], 
+        rating: 4.8, 
+        reviewCount: 256, 
+        type: "NECKLACE", 
+        price: "₹ 2,65,999", 
+        description: "Temple necklace with circular coin designs featuring deity figures, ruby embellishments, and Lakshmi pendant", 
+        material: "22K Gold with Ruby", 
+        purity: "BIS Hallmarked",
+        weight: "115.8 grams", 
+        dimensions: "48 cm length",
+        category: "Gold" 
+      },    
+      { 
+        id: 212, 
+        name: "Blossoming Goddess Necklace", 
+        image: imgNecklace212, 
+        images: [imgNecklace212], 
+        rating: 4.9, 
+        reviewCount: 289, 
+        type: "NECKLACE", 
+        price: "₹ 3,15,999", 
+        description: "Collar-style necklace with gold flower motifs, double-tiered deity pendant with pearl and diamond accents", 
+        material: "22K Gold with Diamond & Pearl", 
+        purity: "BIS Hallmarked",
+        weight: "135.5 grams", 
+        dimensions: "42 cm length",
+        category: "Gold" 
+      },
+      { 
+        id: 213, 
+        name: "Maharani Temple Necklace", 
+        image: imgNecklace213, 
+        images: [imgNecklace213], 
+        rating: 5.0, 
+        reviewCount: 315, 
+        type: "NECKLACE", 
+        price: "₹ 5,25,999", 
+        description: "Ultra-elaborate multi-layered temple jewelry with multiple deity figures, intricate gold work, and jhumka-style danglers", 
+        material: "22K Gold with Ruby, Emerald & Pearl", 
+        purity: "BIS Hallmarked",
+        weight: "225.8 grams", 
+        dimensions: "55 cm length",
+        category: "Gold" 
+      },
+      { 
+        id: 214, 
+        name: "Classic Lakshmi Pendant Necklace", 
+        image: imgNecklace214, 
+        images: [imgNecklace214], 
+        rating: 4.8, 
+        reviewCount: 267, 
+        type: "NECKLACE", 
+        price: "₹ 2,45,999", 
+        description: "Coin necklace with deity motifs, ruby accents, and large teardrop-shaped Lakshmi pendant with bell danglers", 
+        material: "22K Gold with Ruby & Diamond", 
+        purity: "BIS Hallmarked",
+        weight: "105.5 grams", 
+        dimensions: "46 cm length",
+        category: "Gold" 
+      },
       { 
         id: 301, 
         name: "Temple Design Haram", 
@@ -419,6 +581,22 @@ export default function App() {
         material: "22K Gold with Ruby & Pearl", 
         purity: "BIS Hallmarked",
         weight: "135.8 grams", 
+        dimensions: "52 cm length",
+        category: "Gold" 
+      },
+      { 
+        id: 302, 
+        name: "Sacred Coin Haram", 
+        image: imgHaram302, 
+        images: [imgHaram302], 
+        rating: 4.9, 
+        reviewCount: 278, 
+        type: "HARAMS", 
+        price: "₹ 4,55,999", 
+        description: "Traditional haram with circular deity coins, emerald accents, and magnificent Lakshmi pendant centerpiece", 
+        material: "22K Gold with Emerald, Ruby & Diamond", 
+        purity: "BIS Hallmarked",
+        weight: "195.5 grams", 
         dimensions: "52 cm length",
         category: "Gold" 
       },
@@ -588,6 +766,9 @@ export default function App() {
       <Routes>
         {/* Route for main kiosk interface */}
         <Route path="/" element={
+          !isAuthenticated ? (
+            <Login onLoginSuccess={() => setIsAuthenticated(true)} />
+          ) : (
           <>
             <Toaster richColors position="top-center" />
             <CustomerSupportModal 
@@ -981,6 +1162,7 @@ export default function App() {
               }}
             />
           </>
+           )
         } />
         
         {/* Route for admin dashboard */}

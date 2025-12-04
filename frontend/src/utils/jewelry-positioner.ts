@@ -67,8 +67,8 @@ export function getJewelryPlacement(
       const chin = landmarks[152];          // Center of chin
       const leftJaw = landmarks[287];       // Left jaw
       const rightJaw = landmarks[57];       // Right jaw
-      const leftNeck = landmarks[147];      // Left neck point
-      const rightNeck = landmarks[377];     // Right neck point
+      const leftNeck = landmarks[150];      // Left neck point
+      const rightNeck = landmarks[375];     // Right neck point
       const leftCheek = landmarks[123];     // Left cheek
       const rightCheek = landmarks[352];    // Right cheek
 
