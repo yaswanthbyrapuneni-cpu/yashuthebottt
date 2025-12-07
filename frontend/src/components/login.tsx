@@ -16,7 +16,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
 
   // Hardcoded credentials
   const VALID_EMAIL = "Alankaraai@gmail.com";
-  const VALID_PASSWORD = "AdminAlankaraAi@2025";
+  const VALID_PASSWORD = "Admin@1225";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
