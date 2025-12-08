@@ -41,7 +41,7 @@ import imgImage35 from "figma:asset/f5575d8f5c5073585466226b821f83044ac2feb2.png
 import imgVector4 from "figma:asset/f6cad553f57d1dc208b2c4d61a95cfc7a46ccbf8.png";
 import imgCatChains from "figma:asset/fc9e0fb363ea50f06254f1ce635653bee6dab4c1.png";
 import imgNecklace1 from "./assets/1.png";
-import imgNecklace14 from "./assets/14.png";
+
 import imgNecklace2 from "./assets/2.png";
 import imgNecklace3 from "./assets/3.png";
 import imgNecklace6 from "./assets/6.png";
@@ -262,167 +262,8 @@ export default function App() {
     ],
     gold: [
       // Added new test products
-      { 
-        id: 100, 
-        name: "Floral Gold Pendant", 
-        image: imgCatPendants, 
-        images: [imgCatPendants], 
-        rating: 4.8, 
-        reviewCount: 165, 
-        type: "PENDANT", 
-        price: "₹ 42,999", 
-        description: "Exquisite floral design pendant in 22K gold", 
-        material: "22K Gold", 
-        weight: "4.5 grams", 
-        category: "Gold",
-        metadata: {
-          type: "chain",
-          material: "gold",
-          test_mode: true
-        }
-      },
-      { 
-        id: 101, 
-        name: "Classic Gold Bangles", 
-        image: imgVector4, 
-        images: [imgVector4], 
-        rating: 4.7, 
-        reviewCount: 142, 
-        type: "BRACELET", 
-        price: "₹ 85,999", 
-        description: "Elegant bangles with diamond accents", 
-        material: "22K Gold with Diamonds", 
-        weight: "12.5 grams", 
-        category: "Gold",
-        metadata: {
-          style: "flexible",
-          material: "gold",
-          test_mode: true
-        }
-      },
-      // { 
-      //   id: 102, 
-      //   name: "Royal Gold Bangles Set", 
-      //   image: imgVector5, 
-      //   images: [imgVector5], 
-      //   rating: 4.9, 
-      //   reviewCount: 178, 
-      //   type: "BANGLES", 
-      //   price: "â‚¹125,999", 
-      //   description: "Traditional gold bangles set with intricate design", 
-      //   material: "22K Gold", 
-      //   weight: "35.2 grams", 
-      //   category: "Gold",
-      //   metadata: {
-      //     count: 2,
-      //     material: "22k gold",
-      //     test_mode: true
-      //   }
-      // },
-      // // { 
-      //   id: 102, 
-      //   name: "Royal Gold Bangles Set", 
-      //   image: imgVector5, 
-      //   images: [imgVector5], 
-      //   rating: 4.9, 
-      //   reviewCount: 178, 
-      //   type: "BANGLES", 
-      //   price: "â‚¹125,999", 
-      //   description: "Traditional gold bangles set with intricate design", 
-      //   material: "22K Gold", 
-      //   weight: "35.2 grams", 
-      //   category: "Gold",
-      //   metadata: {
-      //     count: 2,
-      //     material: "22k gold",
-      //     test_mode: true
-      //   }
-      // },
-      // { 
-      //   id: 103, 
-      //   name: "Minimal Diamond Nosepin", 
-      //   image: imgVector3, 
-      //   images: [imgVector3], 
-      //   rating: 4.6, 
-      //   reviewCount: 92, 
-      //   type: "ACCESSORIES", 
-      //   price: "â‚¹18,999", 
-      //   description: "Delicate nosepin with diamond accent", 
-      //   material: "18K Gold with Diamond", 
-      //   weight: "0.8 grams", 
-      //   category: "Gold",
-      //   metadata: {
-      //     type: "stud",
-      //     material: "platinum",
-      //     test_mode: true
-      //   }
-      // },
-            { 
-        id: 201, 
-        name: "Heritage Gold Necklace", 
-        image: imgNecklace1, 
-        images: [imgNecklace1], 
-        rating: 4.9, 
-        reviewCount: 245, 
-        type: "NECKLACE", 
-        price: "₹ 1,35,999", 
-        description: "Ornate traditional gold necklace with stunning central pendant featuring intricate goldwork and gemstone accents", 
-        material: "22K Gold with Ruby & Emerald", 
-        purity: "BIS Hallmarked",
-        weight: "52.5 grams", 
-        dimensions: "45 cm length",
-        category: "Gold" 
-      },
-      
-      { 
-        id: 202, 
-        name: "Delicate Pearl Necklace", 
-        image: imgNecklace6, 
-        images: [imgNecklace6], 
-        rating: 4.7, 
-        reviewCount: 198, 
-        type: "NECKLACE", 
-        price: "₹ 68,999", 
-        description: "Elegant necklace with golden floral motifs and pearl drop embellishments", 
-        material: "22K Gold with Pearls & Ruby", 
-        purity: "BIS Hallmarked",
-        weight: "28.3 grams", 
-        dimensions: "40 cm length",
-        category: "Gold" 
-      },
-      
-      { 
-        id: 203, 
-        name: "Traditional Gold Necklace", 
-        image: imgNecklace3, 
-        images: [imgNecklace3], 
-        rating: 4.8, 
-        reviewCount: 312, 
-        type: "NECKLACE", 
-        price: "₹ 1,85,999", 
-        description: "Elaborate traditional necklace with coin designs, gemstone accents, and teardrop pendant", 
-        material: "22K Gold with Ruby & Emerald", 
-        purity: "BIS Hallmarked",
-        weight: "78.5 grams", 
-        dimensions: "48 cm length",
-        category: "Gold" 
-      },
-      { 
-        id: 204, 
-        name: "Grand Bridal Necklace", 
-        image: imgNecklace14, 
-        images: [imgNecklace14], 
-        rating: 5.0, 
-        reviewCount: 178, 
-        type: "NECKLACE", 
-        price: "₹ 3,25,999", 
-        description: "Exquisite bridal necklace with elaborate leaf patterns, ruby embellishments, and pearl drops", 
-        material: "22K Gold with Ruby & Pearl", 
-        purity: "BIS Hallmarked",
-        weight: "165.2 grams", 
-        dimensions: "55 cm length",
-        category: "Gold" 
-      },
+
+
       { 
         id: 205, 
         name: "Traditional Gold Ruby Necklace", 
@@ -584,6 +425,134 @@ export default function App() {
         category: "Gold" 
       },
 
+      { 
+        id: 101, 
+        name: "Classic Gold Bangles", 
+        image: imgVector4, 
+        images: [imgVector4], 
+        rating: 4.7, 
+        reviewCount: 142, 
+        type: "BRACELET", 
+        price: "₹ 85,999", 
+        description: "Elegant bangles with diamond accents", 
+        material: "22K Gold with Diamonds", 
+        weight: "12.5 grams", 
+        category: "Gold",
+        metadata: {
+          style: "flexible",
+          material: "gold",
+          test_mode: true
+        }
+      },
+      { id: 18, name: "Traditional Gold Haram", image: imgHaram, images: [imgHaram], rating: 4.9, reviewCount: 112, type: "HARAMS", price: "₹ 245,999", description: "Exquisite traditional haram with intricate temple design...", material: "22K Gold", weight: "125 grams", category: "Gold" },
+      // { 
+      //   id: 102, 
+      //   name: "Royal Gold Bangles Set", 
+      //   image: imgVector5, 
+      //   images: [imgVector5], 
+      //   rating: 4.9, 
+      //   reviewCount: 178, 
+      //   type: "BANGLES", 
+      //   price: "â‚¹125,999", 
+      //   description: "Traditional gold bangles set with intricate design", 
+      //   material: "22K Gold", 
+      //   weight: "35.2 grams", 
+      //   category: "Gold",
+      //   metadata: {
+      //     count: 2,
+      //     material: "22k gold",
+      //     test_mode: true
+      //   }
+      // },
+      // // { 
+      //   id: 102, 
+      //   name: "Royal Gold Bangles Set", 
+      //   image: imgVector5, 
+      //   images: [imgVector5], 
+      //   rating: 4.9, 
+      //   reviewCount: 178, 
+      //   type: "BANGLES", 
+      //   price: "â‚¹125,999", 
+      //   description: "Traditional gold bangles set with intricate design", 
+      //   material: "22K Gold", 
+      //   weight: "35.2 grams", 
+      //   category: "Gold",
+      //   metadata: {
+      //     count: 2,
+      //     material: "22k gold",
+      //     test_mode: true
+      //   }
+      // },
+      // { 
+      //   id: 103, 
+      //   name: "Minimal Diamond Nosepin", 
+      //   image: imgVector3, 
+      //   images: [imgVector3], 
+      //   rating: 4.6, 
+      //   reviewCount: 92, 
+      //   type: "ACCESSORIES", 
+      //   price: "â‚¹18,999", 
+      //   description: "Delicate nosepin with diamond accent", 
+      //   material: "18K Gold with Diamond", 
+      //   weight: "0.8 grams", 
+      //   category: "Gold",
+      //   metadata: {
+      //     type: "stud",
+      //     material: "platinum",
+      //     test_mode: true
+      //   }
+      // },
+      { 
+        id: 201, 
+        name: "Heritage Gold Necklace", 
+        image: imgNecklace1, 
+        images: [imgNecklace1], 
+        rating: 4.9, 
+        reviewCount: 245, 
+        type: "NECKLACE", 
+        price: "₹ 1,35,999", 
+        description: "Ornate traditional gold necklace with stunning central pendant featuring intricate goldwork and gemstone accents", 
+        material: "22K Gold with Ruby & Emerald", 
+        purity: "BIS Hallmarked",
+        weight: "52.5 grams", 
+        dimensions: "45 cm length",
+        category: "Gold" 
+      },
+      
+      { 
+        id: 202, 
+        name: "Delicate Pearl Necklace", 
+        image: imgNecklace6, 
+        images: [imgNecklace6], 
+        rating: 4.7, 
+        reviewCount: 198, 
+        type: "NECKLACE", 
+        price: "₹ 68,999", 
+        description: "Elegant necklace with golden floral motifs and pearl drop embellishments", 
+        material: "22K Gold with Pearls & Ruby", 
+        purity: "BIS Hallmarked",
+        weight: "28.3 grams", 
+        dimensions: "40 cm length",
+        category: "Gold" 
+      },
+      
+      { 
+        id: 203, 
+        name: "Traditional Gold Necklace", 
+        image: imgNecklace3, 
+        images: [imgNecklace3], 
+        rating: 4.8, 
+        reviewCount: 312, 
+        type: "NECKLACE", 
+        price: "₹ 1,85,999", 
+        description: "Elaborate traditional necklace with coin designs, gemstone accents, and teardrop pendant", 
+        material: "22K Gold with Ruby & Emerald", 
+        purity: "BIS Hallmarked",
+        weight: "78.5 grams", 
+        dimensions: "48 cm length",
+        category: "Gold" 
+      },
+
       { id: 4, name: "Classic Gold Ring", image: imgRing, images: [imgRing, "https://images.unsplash.com/photo-1670831635481-63aa22ee8439?w=1080"], rating: 4.3, reviewCount: 128, type: "RINGS", price: "₹ 38,999", description: "Timeless gold ring...", material: "22K Gold", weight: "6.8 grams", category: "Gold" },
       { id: 5, name: "Traditional Gold Necklace", image: imgVector1, images: [imgVector1, "https://images.unsplash.com/photo-1611012756377-05e2e4269fa3?w=1080"], rating: 4.7, reviewCount: 245, type: "CHAINS", price: "₹ 98,999", description: "Heritage-inspired necklace...", material: "22K Gold", weight: "38.5 grams", category: "Gold" },
       { id: 6, name: "Elegant Gold Earrings", image: imgVector2, images: [imgVector2, "https://images.unsplash.com/photo-1651328905475-16882e198d54?w=1080"], rating: 4.5, reviewCount: 187, type: "EARRINGS", price: "₹ 28,999", description: "Sophisticated earrings...", material: "22K Gold", weight: "10.2 grams", category: "Gold" },
@@ -591,9 +560,8 @@ export default function App() {
       // { id: 11, name: "Ornate Gold Mangalsutra", image: imgCatMangalsutra, images: [imgCatMangalsutra], rating: 4.9, reviewCount: 310, type: "MANGALSUTRA", price: "â‚¹65,000", description: "Traditional mangalsutra...", material: "22K Gold", weight: "15 grams", category: "Gold" },
       { id: 12, name: "Floral Gold Pendant", image: imgCatPendants, images: [imgCatPendants], rating: 4.6, reviewCount: 150, type: "PENDANTS", price: "₹ 22,000", description: "Delicate floral pendant...", material: "22K Gold", weight: "4 grams", category: "Gold" },
       { id: 15, name: "Traditional Waist Belt", image: imgLuxuryBackgroundGoldGradientDesign2, images: [imgLuxuryBackgroundGoldGradientDesign2], rating: 4.7, reviewCount: 95, type: "HIPBELT", price: "â‚¹78,999", description: "Elegant gold waist belt with intricate design...", material: "22K Gold", weight: "85 grams", category: "Gold" },
-      { id: 16, name: "Classic Mathapatti", image: imgManpathi, images: [imgManpathi], rating: 4.9, reviewCount: 78, type: "MATHAPATTI", price: "₹ 65,999", description: "Traditional forehead ornament with intricate chain work and center pendant...", material: "22K Gold", weight: "32 grams", category: "Gold" },
+      { id: 16, name: "Classic Mathapatti", image: imgManpathi, images: [imgManpathi], rating: 4.9, reviewCount: 78, type: "MATHAPATTI", price: "₹ 65,999", description: "Traditional forehead ornament with intricate chain work and center pendant...", material: "22K Gold", weight: "32 grams", category: "Gold" }
       // { id: 17, name: "Modern Forehead Chain", image: imgManpathi, images: [imgManpathi], rating: 4.8, reviewCount: 45, type: "MATHAPATTI", price: "â‚¹45,999", description: "Contemporary mathapatti design with delicate chain pattern...", material: "22K Gold", weight: "25 grams", category: "Gold" },
-      { id: 18, name: "Traditional Gold Haram", image: imgHaram, images: [imgHaram], rating: 4.9, reviewCount: 112, type: "HARAMS", price: "₹ 245,999", description: "Exquisite traditional haram with intricate temple design...", material: "22K Gold", weight: "125 grams", category: "Gold" }
     ],
     diamond: [ // Added Diamond products
       // { id: 7, name: "Solitaire Diamond Ring", image: imgVector4, images: [imgVector4], rating: 4.9, reviewCount: 98, type: "RINGS", price: "â‚¹75,999", description: "Luxurious diamond ring...", material: "18K Gold, Diamond", weight: "4.5 grams", category: "Diamond" },
@@ -971,14 +939,14 @@ export default function App() {
                     )}
                     <div 
                       id="product-scroll"
-                      className="overflow-x-auto overflow-y-hidden scrollbar-hide pb-4 px-2"
+                      className="overflow-x-auto overflow-y-hidden scrollbar-hide pb-4 px-0"
                       style={{ scrollBehavior: 'smooth', scrollSnapType: 'x mandatory' }}
                     >
-                      <div className="flex gap-[24px] justify-start md:justify-center w-full">
+                      <div className="flex gap-[24px] justify-start w-full px-2">
                         {visibleProducts.map((product) => (
                           <div 
                             key={product.id} 
-                            className="w-[calc((100%-48px)/3)] min-w-[calc((100%-48px)/3)] scroll-snap-align-start"
+                            className="flex-none w-[calc(33.333%-16px)] scroll-snap-align-start"
                             style={{ scrollSnapAlign: 'start' }}
                           >
                             <ProductCard
