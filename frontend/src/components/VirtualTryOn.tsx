@@ -57,6 +57,7 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
   const lastFrameTimeRef = useRef<number>(0);
   const mountedRef = useRef(true);
   const hasTrackedRef = useRef(false);
+  const dpiScaleRef = useRef<number>(1);
   
   // State that shouldn't trigger parent re-renders
   const [jewelryImage, setJewelryImage] = useState<HTMLImageElement | null>(null);
@@ -367,15 +368,36 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
     };
   }, [isOpen, isDetectorReady, jewelryImage]);
 
+  // ✅ High DPI Canvas Setup - sized to CONTAINER
+  const setupHighDPICanvas = (canvas: HTMLCanvasElement) => {
+    const dpi = window.devicePixelRatio || 1;
+    dpiScaleRef.current = dpi;
+    
+    // Get container (parent element) dimensions
+    const container = canvas.parentElement;
+    if (!container) return;
+    
+    const displayWidth = container.clientWidth;
+    const displayHeight = container.clientHeight;
+    
+    // Set canvas internal resolution with DPI scaling
+    canvas.width = displayWidth * dpi;
+    canvas.height = displayHeight * dpi;
+    
+    // Set CSS size to match container exactly
+    canvas.style.width = `${displayWidth}px`;
+    canvas.style.height = `${displayHeight}px`;
+    
+    console.log('[VTO] Canvas setup:', { displayWidth, displayHeight, dpi, internalWidth: canvas.width, internalHeight: canvas.height });
+  };
+
   const predictWebcam = () => {
-    // Return early if component is unmounted
     if (!mountedRef.current) return;
 
     const now = performance.now();
     const timeSinceLastFrame = now - lastFrameTimeRef.current;
     
-    // Throttle to 30fps (33ms per frame) for better performance
-    if (timeSinceLastFrame < 60) {
+    if (timeSinceLastFrame < 33) {
       requestRef.current = requestAnimationFrame(predictWebcam);
       return;
     }
@@ -391,23 +413,62 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
       return;
     }
     
-    // Update canvas dimensions if needed
-    if (canvas.width !== video.videoWidth) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+    // ✅ Get container display size
+    const rect = canvas.getBoundingClientRect();
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
+    const dpi = window.devicePixelRatio || 1;
+    
+    // ✅ Set canvas to display size with DPI
+    if (canvas.width !== displayWidth * dpi || canvas.height !== displayHeight * dpi) {
+      canvas.width = displayWidth * dpi;
+      canvas.height = displayHeight * dpi;
+      dpiScaleRef.current = dpi;
+      console.log('[VTO] Canvas:', displayWidth, 'x', displayHeight, 'DPI:', dpi);
     }
     
-    // Run detection and get results
-    const results = runDetection(detectorType, video);
+    // ✅ Scale context for DPI
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpi, dpi);
     
-    // Draw video frame
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    ctx.clearRect(0, 0, displayWidth, displayHeight);
+    
+    // ✅ Calculate video scaling to fill display (cover)
+    const videoAspect = video.videoWidth / video.videoHeight;
+    const displayAspect = displayWidth / displayHeight;
+    
+    let drawWidth, drawHeight, offsetX, offsetY;
+    
+    if (videoAspect > displayAspect) {
+      // Video wider - fit height
+      drawHeight = displayHeight;
+      drawWidth = drawHeight * videoAspect;
+      offsetX = (displayWidth - drawWidth) / 2;
+      offsetY = 0;
+    } else {
+      // Video taller - fit width
+      drawWidth = displayWidth;
+      drawHeight = drawWidth / videoAspect;
+      offsetX = 0;
+      offsetY = (displayHeight - drawHeight) / 2;
+    }
+    
+    // ✅ Draw scaled video
+    ctx.drawImage(video, offsetX, offsetY, drawWidth, drawHeight);
+    
+    // ✅ Calculate scale for landmark transformation
+    const scaleX = drawWidth / video.videoWidth;
+    const scaleY = drawHeight / video.videoHeight;
+    
+    // Run detection
+    const results = runDetection(detectorType, video);
     
     let currentlyDetected = false;
     
     if (results) {
-      // Handle different result structures from MediaPipe models
       let landmarks = null;
       
       if (detectorType === 'face') {
@@ -433,18 +494,28 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
       setFaceDetected(currentlyDetected);
       
       if (landmarks) {
-        // Normalize jewelry type
+        // ✅ Transform landmarks: video space → canvas display space
+        const scaledLandmarks = landmarks.map(lm => ({
+          x: (lm.x * video.videoWidth * scaleX + offsetX) / displayWidth,
+          y: (lm.y * video.videoHeight * scaleY + offsetY) / displayHeight,
+          z: lm.z,
+          visibility: lm.visibility
+        }));
+        
+        // ✅ Canvas object for positioning (display size)
+        const positionCanvas = {
+          width: displayWidth,
+          height: displayHeight
+        };
+        
         const normalizedType = jewelryType?.toUpperCase?.();
 
-        // Special handling for earrings - draw on both ears
         if (normalizedType === 'EARRINGS' || jewelryType === 'earring-left' || jewelryType === 'earrings') {
-          // Check if ears are visible based on landmark positions
-          const leftEarVisible = checkEarVisibility(landmarks, 'left');
-          const rightEarVisible = checkEarVisibility(landmarks, 'right');
+          const leftEarVisible = checkEarVisibility(scaledLandmarks, 'left');
+          const rightEarVisible = checkEarVisibility(scaledLandmarks, 'right');
 
-          // Only get placement for visible ears
-          const leftPlacement = leftEarVisible ? getJewelryPlacement('earring-left', landmarks, canvas, jewelryImage) : null;
-          const rightPlacement = rightEarVisible ? getJewelryPlacement('earring-right', landmarks, canvas, jewelryImage) : null;
+          const leftPlacement = leftEarVisible ? getJewelryPlacement('earring-left', scaledLandmarks, positionCanvas as any, jewelryImage) : null;
+          const rightPlacement = rightEarVisible ? getJewelryPlacement('earring-right', scaledLandmarks, positionCanvas as any, jewelryImage) : null;
 
           if (leftPlacement && leftEarVisible) {
             ctx.drawImage(jewelryImage, leftPlacement.x, leftPlacement.y, leftPlacement.width, leftPlacement.height);
@@ -453,13 +524,11 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
             ctx.drawImage(jewelryImage, rightPlacement.x, rightPlacement.y, rightPlacement.width, rightPlacement.height);
           }
         } else {
-          const placement = getJewelryPlacement(jewelryType, landmarks, canvas, jewelryImage);
+          const placement = getJewelryPlacement(jewelryType, scaledLandmarks, positionCanvas as any, jewelryImage);
           if (placement) {
-            // Handle array of placements for bangles
             if (Array.isArray(placement)) {
               placement.forEach(p => {
                 ctx.save();
-                // Apply rotation if available
                 if (p.rotation) {
                   const centerX = p.x + p.width / 2;
                   const centerY = p.y + p.height / 2;
@@ -471,7 +540,6 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
                 ctx.restore();
               });
             } else {
-              // Apply specific adjustments for chains
               if (jewelryType === 'CHAINS') {
                 ctx.save();
                 ctx.filter = 'brightness(1.1) contrast(1.2)';
@@ -494,6 +562,7 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
     
     requestRef.current = requestAnimationFrame(predictWebcam);
   };
+
   
   const startCamera = async () => {
     console.log('[VTO] Starting camera initialization');
@@ -657,7 +726,7 @@ export function VirtualTryOn({ isOpen, onClose, productId, productImage, product
               </div>
             )}
             {!isLoading && hasCamera && (
-              <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover" />
+              <canvas ref={canvasRef} className="absolute inset-0 w-full h-full " />
             )}
             {!isLoading && !hasCamera && (
               <div className="flex flex-col items-center justify-center gap-6 max-w-md">
